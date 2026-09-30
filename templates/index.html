@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Intelligent Voting-Based Ensemble Machine Learning Framework for Early Detection of Alzheimer's Disease using Clinical and Neuro-imaging Biomarkers, featuring 10 SOTA models including LightGBM and CatBoost.">
-  <title>NeuroVote AI | Advanced Multi-Model Ensemble Framework</title>
+  <meta name="description" content="Intelligent Voting-Based Ensemble Machine Learning Framework for Early Detection of Alzheimer's Disease using Clinical and Neuro-imaging Biomarkers, featuring 10 SOTA models, Local SHAP XAI, 3-Year Prognosis, and Hospital Triage.">
+  <title>NeuroVote AI | Medical Informatics Decision Support System</title>
   
   <!-- Modern Google Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,8 +30,8 @@
           </svg>
         </div>
         <div class="brand-text">
-          <h1>NeuroVote<span>AI</span> <span class="version-badge">v2.0 SOTA</span></h1>
-          <p>Multi-Model Voting Ensemble for Early Alzheimer's Detection</p>
+          <h1>NeuroVote<span>AI</span> <span class="version-badge">CDSS Enterprise</span></h1>
+          <p>Multi-Model Voting Ensemble & Clinical Decision Support System</p>
         </div>
       </div>
       <div class="header-stats">
@@ -60,7 +60,11 @@
     <div class="nav-container">
       <button class="nav-tab active" data-tab="tab-predict" id="tab-btn-predict">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-        Clinical Diagnostic Assessment
+        Diagnostic Assessment & Staging
+      </button>
+      <button class="nav-tab" data-tab="tab-batch" id="tab-btn-batch">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        Cohort Batch Screening & Triage
       </button>
       <button class="nav-tab" data-tab="tab-benchmarks" id="tab-btn-benchmarks">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -76,7 +80,7 @@
   <!-- Main Container -->
   <main class="main-content">
 
-    <!-- TAB 1: CLINICAL DIAGNOSTIC ASSESSMENT -->
+    <!-- TAB 1: CLINICAL DIAGNOSTIC ASSESSMENT & STAGING -->
     <section id="tab-predict" class="tab-panel active">
       
       <!-- Ensemble Mode Switcher Banner -->
@@ -110,7 +114,7 @@
         <div class="card form-card">
           <div class="card-header">
             <div>
-              <h2>Patient Evaluation Form</h2>
+              <h2>Patient Clinical Evaluation</h2>
               <p>Enter patient cognitive, clinical, and biomarker data to predict Alzheimer's risk.</p>
             </div>
             <!-- Quick Preset Selectors -->
@@ -257,12 +261,12 @@
           </form>
         </div>
 
-        <!-- Right Column: Results & Interpretability -->
+        <!-- Right Column: Results & Clinical Intelligence -->
         <div class="card results-card" id="results-panel">
           <div class="card-header">
             <div>
-              <h2>Diagnostic Prediction Output</h2>
-              <p id="results-panel-subtitle">Adaptive Soft-Voting Ensemble classification across all active models.</p>
+              <h2>Diagnostic Decision Output</h2>
+              <p id="results-panel-subtitle">Multi-Model Ensemble classification, staging, and local feature attribution.</p>
             </div>
             <div id="status-indicator" class="status-pill status-ready">Ready for Evaluation</div>
           </div>
@@ -281,6 +285,18 @@
           <!-- Result Content State (Hidden Initially) -->
           <div id="results-content" class="results-content-state hidden">
             
+            <!-- Quick Clinical Actions Bar -->
+            <div class="clinical-actions-bar">
+              <button type="button" class="btn-action-pill" id="btn-open-report">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                Export Diagnostic Report (Print / PDF)
+              </button>
+              <button type="button" class="btn-action-pill" id="btn-toggle-intervention">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                'What-If' Intervention Simulator
+              </button>
+            </div>
+
             <!-- Ensemble Verdict Banner -->
             <div class="verdict-banner" id="verdict-card">
               <div class="verdict-icon" id="verdict-icon">
@@ -299,12 +315,113 @@
               </div>
             </div>
 
+            <!-- Clinical Disease Staging & 3-Year Prognosis Trajectory -->
+            <div class="prognosis-card" id="prognosis-card">
+              <div class="prognosis-header">
+                <div>
+                  <span class="badge badge-accent">Clinical Staging & 3-Year Prognosis</span>
+                  <h4 id="disease-stage-title">Stage 1: Cognitively Normal (CN)</h4>
+                  <p id="disease-stage-desc">Normative cognitive performance and preserved biological biomarkers.</p>
+                </div>
+              </div>
+
+              <!-- Staging Milestone Timeline -->
+              <div class="staging-milestones">
+                <div class="milestone-step" id="step-stage-1">
+                  <span class="step-dot"></span>
+                  <span class="step-lbl">CN</span>
+                  <small>Stage 1</small>
+                </div>
+                <div class="milestone-step" id="step-stage-2">
+                  <span class="step-dot"></span>
+                  <span class="step-lbl">SCD</span>
+                  <small>Stage 2</small>
+                </div>
+                <div class="milestone-step" id="step-stage-3">
+                  <span class="step-dot"></span>
+                  <span class="step-lbl">MCI</span>
+                  <small>Stage 3</small>
+                </div>
+                <div class="milestone-step" id="step-stage-4">
+                  <span class="step-dot"></span>
+                  <span class="step-lbl">Mild AD</span>
+                  <small>Stage 4</small>
+                </div>
+                <div class="milestone-step" id="step-stage-5">
+                  <span class="step-dot"></span>
+                  <span class="step-lbl">Severe AD</span>
+                  <small>Stage 5</small>
+                </div>
+              </div>
+
+              <!-- 3-Year Projected Trajectory Curve -->
+              <div class="trajectory-section">
+                <h5>Projected Risk Trajectory (Natural History Decline)</h5>
+                <div class="trajectory-grid" id="trajectory-grid">
+                  <!-- Dynamically populated via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive 'What-If' Counterfactual Intervention Simulator Panel (Collapsible) -->
+            <div class="intervention-simulator-card hidden" id="intervention-simulator-card">
+              <div class="sim-header">
+                <div>
+                  <h4>💡 'What-If' Therapeutic & Lifestyle Intervention Simulator</h4>
+                  <p>Simulate how targeted occupational therapy, lifestyle changes, and anti-amyloid treatments reduce this patient's disease risk.</p>
+                </div>
+                <button type="button" class="btn-close-sim" id="btn-close-sim">✕</button>
+              </div>
+
+              <div class="sim-controls-grid">
+                <div class="sim-control">
+                  <label for="sim-functional">Occupational & Functional Independence Therapy: <strong id="lbl-sim-func">+0.0</strong></label>
+                  <input type="range" id="sim-functional" min="0" max="2.5" step="0.25" value="0">
+                  <span class="sim-helper">Target: Retaining autonomy in complex daily routines (+0 to +2.5)</span>
+                </div>
+
+                <div class="sim-control">
+                  <label for="sim-adl">Lifestyle & Daily Living Skills Rehabilitation: <strong id="lbl-sim-adl">+0.0</strong></label>
+                  <input type="range" id="sim-adl" min="0" max="2.5" step="0.25" value="0">
+                  <span class="sim-helper">Target: Self-care, bathing, meal prep assistance (+0 to +2.5)</span>
+                </div>
+
+                <div class="sim-control">
+                  <label for="sim-csf">Anti-Amyloid Clearance & Stabilization: <strong id="lbl-sim-csf">+0 pg/mL</strong></label>
+                  <input type="range" id="sim-csf" min="0" max="200" step="20" value="0">
+                  <span class="sim-helper">Target: Elevates CSF Aβ42 solubility (+0 to +200 pg/mL)</span>
+                </div>
+
+                <div class="sim-control">
+                  <label for="sim-mmse">Cholinesterase Inhibitor / Cognitive Training: <strong id="lbl-sim-mmse">+0.0</strong></label>
+                  <input type="range" id="sim-mmse" min="0" max="3.0" step="0.5" value="0">
+                  <span class="sim-helper">Target: Symptomatic memory and recall boost (+0 to +3.0)</span>
+                </div>
+              </div>
+
+              <!-- Simulation Output Banner -->
+              <div class="sim-results-banner" id="sim-results-banner">
+                <div class="sim-res-item">
+                  <span class="sim-res-lbl">Baseline Risk</span>
+                  <strong class="sim-res-val" id="sim-base-risk">0.0%</strong>
+                </div>
+                <div class="sim-res-arrow">➔</div>
+                <div class="sim-res-item">
+                  <span class="sim-res-lbl">Post-Intervention Risk</span>
+                  <strong class="sim-res-val text-success" id="sim-post-risk">0.0%</strong>
+                </div>
+                <div class="sim-reduction-badge" id="sim-reduction-badge">
+                  -0.0% Absolute Risk Reduction
+                </div>
+              </div>
+            </div>
+
             <!-- Dynamic Model Probabilities Breakdown -->
             <div class="breakdown-section">
               <div class="breakdown-header">
                 <div>
                   <h4 id="breakdown-heading">Multi-Classifier Posterior Probabilities & F1 Weights</h4>
-                  <span class="text-muted" id="breakdown-subheading">Adaptive validation F1 soft-voting aggregation</span>
+                  <span class="text-muted" id="breakdown-subheading">Adaptive validation F1 soft-voting aggregation across active models</span>
                 </div>
                 <span class="badge badge-accent" id="active-models-counter">10 Models Queried</span>
               </div>
@@ -312,6 +429,20 @@
               <!-- Container for dynamic classifier list -->
               <div class="classifier-list-dynamic" id="dynamic-classifier-container">
                 <!-- Rendered dynamically by JavaScript -->
+              </div>
+            </div>
+
+            <!-- Patient-Specific Local Feature Attribution (SHAP Waterfall) -->
+            <div class="local-shap-card" id="local-shap-card">
+              <div class="shap-card-header">
+                <div>
+                  <h4>Patient-Specific Local Feature Impact (SHAP Attribution)</h4>
+                  <p>Attribution decomposition explaining precisely why this patient received this prediction.</p>
+                </div>
+                <span class="badge badge-purple">Local XAI</span>
+              </div>
+              <div class="local-shap-list" id="local-shap-list">
+                <!-- Dynamically populated via JS -->
               </div>
             </div>
 
@@ -329,7 +460,102 @@
       </div>
     </section>
 
-    <!-- TAB 2: MODEL BENCHMARKS & WEIGHTS -->
+    <!-- TAB 2: COHORT BATCH SCREENING & HOSPITAL TRIAGE -->
+    <section id="tab-batch" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Cohort Batch Screening & Hospital Triage Dashboard</h2>
+            <p>Perform high-throughput population screening on clinical trial cohorts and hospital patient batches.</p>
+          </div>
+          <div class="batch-header-actions">
+            <button type="button" class="btn btn-secondary" id="btn-load-demo-cohort">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Load Demo Screening Cohort (25 Patients)
+            </button>
+            <label class="btn btn-primary" for="batch-file-input">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Upload Patient CSV
+              <input type="file" id="batch-file-input" accept=".csv" style="display: none;">
+            </label>
+          </div>
+        </div>
+
+        <!-- Cohort Summary Metrics (KPI Cards) -->
+        <div class="cohort-kpi-grid" id="cohort-kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-lbl">Total Screened</span>
+            <strong class="kpi-val" id="kpi-total">0</strong>
+            <small class="kpi-sub">Evaluated Patients</small>
+          </div>
+          <div class="kpi-card border-danger">
+            <span class="kpi-lbl">High Priority Triage</span>
+            <strong class="kpi-val text-danger" id="kpi-high">0</strong>
+            <small class="kpi-sub" id="kpi-high-pct">0.0% Immediate Referral</small>
+          </div>
+          <div class="kpi-card border-warning">
+            <span class="kpi-lbl">Borderline / MCI</span>
+            <strong class="kpi-val text-warning" id="kpi-borderline">0</strong>
+            <small class="kpi-sub" id="kpi-borderline-pct">0.0% Monitoring Protocol</small>
+          </div>
+          <div class="kpi-card border-success">
+            <span class="kpi-lbl">Normative / Preserved</span>
+            <strong class="kpi-val text-success" id="kpi-normal">0</strong>
+            <small class="kpi-sub" id="kpi-normal-pct">0.0% Cognitively Intact</small>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-lbl">Avg Cohort Risk</span>
+            <strong class="kpi-val" id="kpi-avg-risk">0.0%</strong>
+            <small class="kpi-sub">Super-Ensemble Mean</small>
+          </div>
+        </div>
+
+        <!-- Filter and Search Controls -->
+        <div class="batch-controls-bar">
+          <div class="triage-filter-tabs">
+            <button type="button" class="btn-filter active" data-filter="all">All Patients (<span id="count-all">0</span>)</button>
+            <button type="button" class="btn-filter text-danger" data-filter="high">🔴 High Priority (<span id="count-high">0</span>)</button>
+            <button type="button" class="btn-filter text-warning" data-filter="borderline">🟡 Borderline (<span id="count-borderline">0</span>)</button>
+            <button type="button" class="btn-filter text-success" data-filter="normal">🟢 Normative (<span id="count-normal">0</span>)</button>
+          </div>
+          <div class="batch-search-box">
+            <input type="text" id="batch-search" placeholder="Search by Patient ID...">
+            <button type="button" class="btn-export-csv" id="btn-export-batch-csv">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Annotated CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Triage Data Table -->
+        <div class="table-container">
+          <table class="benchmark-table triage-table" id="triage-table">
+            <thead>
+              <tr>
+                <th>Patient ID</th>
+                <th>Age</th>
+                <th>MMSE</th>
+                <th>Functional</th>
+                <th>APOE4</th>
+                <th>P(AD Risk)</th>
+                <th>P(Healthy)</th>
+                <th>Triage Priority & Protocol</th>
+              </tr>
+            </thead>
+            <tbody id="triage-table-body">
+              <tr>
+                <td colspan="8" class="text-center text-muted" style="padding: 2.5rem;">
+                  No cohort uploaded yet. Click <strong>"Load Demo Screening Cohort (25 Patients)"</strong> or upload a CSV file above.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: MODEL BENCHMARKS & WEIGHTS -->
     <section id="tab-benchmarks" class="tab-panel">
       
       <!-- Side-by-side Ensemble Highlights -->
@@ -624,7 +850,7 @@
       </div>
     </section>
 
-    <!-- TAB 3: EXPLAINABLE AI & PLOTS -->
+    <!-- TAB 4: EXPLAINABLE AI & PLOTS -->
     <section id="tab-xai" class="tab-panel">
       <div class="card">
         <div class="card-header">
@@ -639,7 +865,7 @@
           <div class="vis-item">
             <div class="vis-header">
               <h3>SHAP Beeswarm Summary Plot</h3>
-              <p>Feature impact on model output across the test cohort (XGBoost)</p>
+              <p>Global feature impact on model output across the test cohort (XGBoost)</p>
             </div>
             <div class="vis-img-wrapper">
               <img src="/visualizations/shap_summary.png" alt="SHAP Beeswarm Summary Plot" loading="lazy">
@@ -682,9 +908,118 @@
 
   </main>
 
+  <!-- CLINICAL DIAGNOSTIC REPORT MODAL (PRINTABLE PDF READY) -->
+  <div class="report-modal-overlay hidden" id="report-modal">
+    <div class="report-modal-dialog">
+      <div class="report-modal-header no-print">
+        <div>
+          <h3>Formal Clinical Diagnostic Report</h3>
+          <p>Generated by NeuroVote AI Clinical Decision Support System</p>
+        </div>
+        <div class="modal-header-actions">
+          <button type="button" class="btn btn-primary" id="btn-print-report">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print / Save as PDF
+          </button>
+          <button type="button" class="btn btn-secondary" id="btn-close-report">Close</button>
+        </div>
+      </div>
+
+      <!-- Printable Report Document Body -->
+      <div class="printable-report" id="printable-report-content">
+        
+        <!-- Hospital Document Header -->
+        <div class="report-doc-header">
+          <div class="doc-brand">
+            <h2>NEUROVOTE AI CLINICAL DECISION SUPPORT SYSTEM</h2>
+            <p>Advanced Informatics & Multi-Model Ensemble Diagnostic Framework</p>
+          </div>
+          <div class="doc-meta">
+            <div><strong>Report Ref:</strong> <span id="rep-ref">NVA-2026-9041</span></div>
+            <div><strong>Date & Time:</strong> <span id="rep-date">October 1, 2026</span></div>
+            <div><strong>Engine Mode:</strong> <span id="rep-engine">10-Model Super-Ensemble</span></div>
+          </div>
+        </div>
+
+        <hr class="doc-divider">
+
+        <!-- Executive Summary Banner -->
+        <div class="doc-summary-banner" id="rep-summary-banner">
+          <div>
+            <span class="doc-caption">Diagnostic Assessment Verdict</span>
+            <h3 id="rep-verdict">Non-Alzheimer (Cognitively Preserved)</h3>
+            <p id="rep-subtext">Clinical evaluation and biological biomarkers remain within normative bounds.</p>
+          </div>
+          <div class="doc-score-box">
+            <span class="doc-score-lbl">Diagnostic Confidence</span>
+            <strong class="doc-score-val" id="rep-conf-score">100.0%</strong>
+            <span class="doc-risk-badge" id="rep-risk-badge">Low Risk</span>
+          </div>
+        </div>
+
+        <!-- Section: Patient Biomarker & Cognitive Profile -->
+        <div class="doc-section">
+          <h4>1. Patient Cognitive & Neuro-imaging Biomarker Profile</h4>
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Clinical / Biomarker Parameter</th>
+                <th>Patient Value</th>
+                <th>Normative Reference Range</th>
+                <th>Clinical Assessment</th>
+              </tr>
+            </thead>
+            <tbody id="rep-biomarkers-tbody">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section: 10-Model Ensemble Consensus -->
+        <div class="doc-section">
+          <h4>2. Multi-Classifier Consensus Matrix</h4>
+          <p class="doc-section-desc">Independent probability outputs and validation F1-weights across the 10 machine learning models:</p>
+          <div class="rep-consensus-grid" id="rep-consensus-grid">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Section: Top Feature Attribution (Local SHAP) -->
+        <div class="doc-section">
+          <h4>3. Local Feature Attribution & Primary Risk Drivers (SHAP)</h4>
+          <ul class="rep-shap-list" id="rep-shap-list">
+            <!-- Dynamically populated via JS -->
+          </ul>
+        </div>
+
+        <!-- Section: Evidence-Based Clinical Action Protocol -->
+        <div class="doc-section">
+          <h4>4. Recommended Clinical Protocol & Follow-up Guidelines</h4>
+          <div class="rep-action-box" id="rep-action-box">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Document Sign-off Footer -->
+        <div class="doc-footer-signoff">
+          <p><strong>Clinical Notice:</strong> This report is generated by an artificial intelligence decision support system for medical informatics and clinical investigation. Clinical diagnosis must be confirmed by a licensed neurologist in conjunction with comprehensive clinical history.</p>
+          <div class="signoff-lines">
+            <div class="signoff-block">
+              <span>Evaluating Clinician Signature: ___________________________</span>
+            </div>
+            <div class="signoff-block">
+              <span>Date: ________________________</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="app-footer">
-    <p>© 2026 NeuroVote AI Medical Informatics Project. Powered by XGBoost, LightGBM, CatBoost, Scikit-Learn, and SHAP Explainable AI.</p>
+    <p>© 2026 NeuroVote AI Medical Decision Support System. Powered by XGBoost, LightGBM, CatBoost, Scikit-Learn, and SHAP Explainable AI.</p>
   </footer>
 
   <script src="/static/js/app.js"></script>

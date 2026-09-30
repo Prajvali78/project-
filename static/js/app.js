@@ -1,17 +1,26 @@
 /**
- * NeuroVote AI - Frontend Client Logic (v2.0 SOTA Multi-Model Support)
- * Handles interactive tabs, theme toggle, clinical presets,
- * dual ensemble modes (Standard 4-Model vs Advanced 10-Model Super-Ensemble),
- * dynamic multi-model probability meters, and clinical risk factor interpretation.
+ * NeuroVote AI - Frontend Client Logic (v2.5 Full SOTA Clinical Decision Support)
+ * Integrates:
+ * 1. Multi-tab navigation & Dark/Light mode switcher
+ * 2. Dual Ensemble engines (Standard 4-Model vs Advanced 10-Model Super-Ensemble)
+ * 3. Clinical demo presets calibrated to longitudinal dataset distributions
+ * 4. Dynamic Multi-Classifier posterior meters grouped by algorithmic family
+ * 5. Patient-Specific Local Feature Attribution (SHAP Waterfall decomposition)
+ * 6. Clinical Disease Staging & 3-Year Longitudinal Progression Trajectory
+ * 7. Interactive 'What-If' Therapeutic Counterfactual Intervention Simulator
+ * 8. Formal Printable Clinical Diagnostic Report (Print / PDF ready)
+ * 9. Cohort Batch Screening & Hospital Triage Dashboard with live CSV exporter
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Elements
+  // =========================================================================
+  // DOM Elements
+  // =========================================================================
   const form = document.getElementById('prediction-form');
   const btnPredict = document.getElementById('btn-predict');
   const btnReset = document.getElementById('btn-reset');
   const spinner = document.getElementById('predict-spinner');
-  
+
   const resultsEmpty = document.getElementById('results-empty');
   const resultsContent = document.getElementById('results-content');
   const statusIndicator = document.getElementById('status-indicator');
@@ -31,14 +40,72 @@ document.addEventListener('DOMContentLoaded', () => {
   const factorList = document.getElementById('factor-list');
   const themeToggle = document.getElementById('theme-toggle');
 
+  // Staging & Trajectory Elements
+  const diseaseStageTitle = document.getElementById('disease-stage-title');
+  const diseaseStageDesc = document.getElementById('disease-stage-desc');
+  const trajectoryGrid = document.getElementById('trajectory-grid');
+
+  // Local SHAP Elements
+  const localShapList = document.getElementById('local-shap-list');
+
+  // What-If Simulator Elements
+  const btnToggleIntervention = document.getElementById('btn-toggle-intervention');
+  const interventionCard = document.getElementById('intervention-simulator-card');
+  const btnCloseSim = document.getElementById('btn-close-sim');
+  const simFunctional = document.getElementById('sim-functional');
+  const simAdl = document.getElementById('sim-adl');
+  const simCsf = document.getElementById('sim-csf');
+  const simMmse = document.getElementById('sim-mmse');
+  const lblSimFunc = document.getElementById('lbl-sim-func');
+  const lblSimAdl = document.getElementById('lbl-sim-adl');
+  const lblSimCsf = document.getElementById('lbl-sim-csf');
+  const lblSimMmse = document.getElementById('lbl-sim-mmse');
+  const simBaseRisk = document.getElementById('sim-base-risk');
+  const simPostRisk = document.getElementById('sim-post-risk');
+  const simReductionBadge = document.getElementById('sim-reduction-badge');
+
+  // Clinical Report Modal Elements
+  const btnOpenReport = document.getElementById('btn-open-report');
+  const btnCloseReport = document.getElementById('btn-close-report');
+  const btnPrintReport = document.getElementById('btn-print-report');
+  const reportModal = document.getElementById('report-modal');
+
+  // Batch Screening Elements
+  const btnLoadDemoCohort = document.getElementById('btn-load-demo-cohort');
+  const batchFileInput = document.getElementById('batch-file-input');
+  const triageTableBody = document.getElementById('triage-table-body');
+  const batchSearchInput = document.getElementById('batch-search');
+  const btnExportBatchCsv = document.getElementById('btn-export-batch-csv');
+  const filterBtns = document.querySelectorAll('.btn-filter');
+
+  // KPI Elements
+  const kpiTotal = document.getElementById('kpi-total');
+  const kpiHigh = document.getElementById('kpi-high');
+  const kpiHighPct = document.getElementById('kpi-high-pct');
+  const kpiBorderline = document.getElementById('kpi-borderline');
+  const kpiBorderlinePct = document.getElementById('kpi-borderline-pct');
+  const kpiNormal = document.getElementById('kpi-normal');
+  const kpiNormalPct = document.getElementById('kpi-normal-pct');
+  const kpiAvgRisk = document.getElementById('kpi-avg-risk');
+  const countAll = document.getElementById('count-all');
+  const countHigh = document.getElementById('count-high');
+  const countBorderline = document.getElementById('count-borderline');
+  const countNormal = document.getElementById('count-normal');
+
   // Mode Switcher Elements
   const modeBtns = document.querySelectorAll('.btn-mode');
   const currentModeTitle = document.getElementById('current-mode-title');
   const currentModeDesc = document.getElementById('current-mode-desc');
   let currentEnsembleMode = 'advanced';
 
-  // Last input payload cache for instant re-eval on mode toggle
+  // Application State
   let lastPayload = null;
+  let latestPredictionResult = null;
+  let currentSimPatient = null;
+  let simDebounceTimer = null;
+  let batchCohortData = [];
+  let currentBatchFilter = 'all';
+  let batchSearchQuery = '';
 
   // =========================================================================
   // 1. Navigation Tab Switching
@@ -67,12 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('neurovote_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
 
-  themeToggle.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('neurovote_theme', next);
-  });
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('neurovote_theme', next);
+    });
+  }
 
   // =========================================================================
   // 3. Ensemble Mode Switching (Advanced vs Standard)
@@ -94,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentModeDesc.textContent = 'F1-score-weighted soft voting across 4 core clinical classifiers: Random Forest, XGBoost, Support Vector Machine, and Multi-Layer Perceptron (96.0% Benchmark Accuracy).';
       }
 
-      // If user already generated a prediction, re-run with new ensemble mode
+      // If user already evaluated a patient, re-run with new ensemble mode
       if (lastPayload) {
         executePrediction(lastPayload);
       }
@@ -102,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 4. Clinical Demo Presets (Calibrated to Dataset Distributions)
+  // 4. Clinical Demo Presets
   // =========================================================================
   const presets = {
     healthy: {
@@ -152,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = presets[pKey];
       if (!data) return;
 
-      // Populate form fields
       for (const [key, val] of Object.entries(data)) {
         const input = form.elements[key];
         if (input) {
@@ -160,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // Visual feedback
       btn.style.transform = 'scale(0.95)';
       setTimeout(() => { btn.style.transform = ''; }, 150);
     });
@@ -170,8 +237,11 @@ document.addEventListener('DOMContentLoaded', () => {
   btnReset.addEventListener('click', () => {
     form.reset();
     lastPayload = null;
+    latestPredictionResult = null;
+    currentSimPatient = null;
     resultsContent.classList.add('hidden');
     resultsEmpty.classList.remove('hidden');
+    if (interventionCard) interventionCard.classList.add('hidden');
     statusIndicator.className = 'status-pill status-ready';
     statusIndicator.textContent = 'Ready for Evaluation';
   });
@@ -182,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Collect data
     const formData = new FormData(form);
     const payload = {};
     for (const [k, v] of formData.entries()) {
@@ -194,13 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function executePrediction(payload) {
-    // UI Loading state
     btnPredict.disabled = true;
     spinner.classList.remove('hidden');
     statusIndicator.className = 'status-pill';
     statusIndicator.textContent = 'Querying Ensemble...';
 
-    // Inject active mode
     payload.ensemble_mode = currentEnsembleMode;
 
     try {
@@ -215,6 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const result = await response.json();
+      latestPredictionResult = result;
+      currentSimPatient = Object.assign({}, payload);
       renderPrediction(result, payload);
 
     } catch (err) {
@@ -259,37 +328,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     verdictProb.textContent = isAD ? `${adProbPercent}%` : `${confPercent}%`;
 
-    // Verdict Icon
     verdictIcon.innerHTML = isAD
       ? `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
       : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
 
-    // Risk Badge
     riskBadge.className = `risk-badge ${res.risk_level === 'Low' ? 'risk-low' : res.risk_level === 'Moderate' ? 'risk-moderate' : 'risk-high'}`;
     riskBadge.textContent = isAD ? `${res.risk_level} Risk Category` : `Healthy (${res.risk_level} Risk)`;
 
-    // Dual probabilities subdetail
     if (verdictDualProbs) {
       verdictDualProbs.textContent = `P(Healthy): ${healthyProbPercent}%  •  P(AD Risk): ${adProbPercent}%`;
     }
 
-    // Active models counter badge
     activeModelsCounter.textContent = `${res.models_count} Models Queried (${res.ensemble_mode.toUpperCase()})`;
 
-    // Render Dynamic Multi-Classifier Progress Meters
+    // 1. Render Multi-Classifier Progress Meters
     renderDynamicClassifiers(res.models_detail || res.individual_probabilities, res.weights);
 
-    // Build Clinical Interpretation Notes
+    // 2. Render Staging & 3-Year Trajectory
+    renderStagingAndTrajectory(res);
+
+    // 3. Render Patient-Specific Local Feature Attribution (SHAP)
+    renderLocalShapAttributions(res.local_attributions);
+
+    // 4. Reset & Initialize What-If Simulator state
+    initInterventionSimulator(adProbPercent);
+
+    // 5. Build Clinical Interpretation Notes
     generateClinicalFactors(inputData, isAD);
   }
 
   // =========================================================================
-  // 7. Dynamic Multi-Classifier Progress Bars (Informative & Vibrant)
+  // 7. Dynamic Multi-Classifier Progress Bars
   // =========================================================================
   function renderDynamicClassifiers(modelsDetail, weightsMap) {
     dynamicClfContainer.innerHTML = '';
 
-    // Family categories definition
     const categories = [
       { id: 'boosting', title: '🚀 State-of-the-Art Gradient Boosters', models: ['CatBoost', 'LightGBM', 'XGBoost', 'Gradient Boosting'] },
       { id: 'trees', title: '🌲 Bagged & Randomized Tree Ensembles', models: ['Random Forest', 'Extra Trees'] },
@@ -297,7 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
       { id: 'statistical', title: '📊 Regularized Linear & Instance Classifiers', models: ['KNN', 'ElasticNet LogReg'] }
     ];
 
-    // Determine present models
     const activeModelNames = Object.keys(modelsDetail);
 
     categories.forEach(cat => {
@@ -344,9 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const confPercent = conf.toFixed(1);
         const weightPercent = (weight * 100).toFixed(1);
 
-        // Status badge and bar fill logic:
-        // When model predicts Healthy: show healthy badge and fill meter with healthy confidence!
-        // When model predicts AD: show AD risk badge and fill meter with AD risk probability!
         const isModelAD = predClass === 1;
         let statusBadgeHtml = '';
         let fillWidthPercent = '';
@@ -391,7 +460,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         familyGrid.appendChild(itemDiv);
 
-        // Trigger animation after DOM insertion
         setTimeout(() => {
           const fillBar = itemDiv.querySelector('.progress-fill');
           if (fillBar) fillBar.style.width = `${fillWidthPercent}%`;
@@ -404,7 +472,544 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 8. Clinical Interpretation Generator
+  // 8. Staging Milestones & 3-Year Prognosis Trajectory
+  // =========================================================================
+  function renderStagingAndTrajectory(res) {
+    if (!res.disease_stage) return;
+
+    if (diseaseStageTitle) diseaseStageTitle.textContent = res.disease_stage.title;
+    if (diseaseStageDesc) diseaseStageDesc.textContent = res.disease_stage.description;
+
+    // Reset milestone steps
+    for (let i = 1; i <= 5; i++) {
+      const stepEl = document.getElementById(`step-stage-1`.replace('1', i));
+      if (stepEl) {
+        stepEl.classList.remove('active', 'stage-danger');
+      }
+    }
+
+    const tierNum = res.disease_stage.tier.replace('stage-', '');
+    const activeStep = document.getElementById(`step-stage-${tierNum}`);
+    if (activeStep) {
+      activeStep.classList.add('active');
+      if (parseInt(tierNum) >= 3) {
+        activeStep.classList.add('stage-danger');
+      }
+    }
+
+    // Render Trajectory Grid
+    if (trajectoryGrid && res.progression_trajectory) {
+      trajectoryGrid.innerHTML = '';
+      res.progression_trajectory.forEach(node => {
+        const nodeDiv = document.createElement('div');
+        nodeDiv.className = 'traj-node';
+        
+        const isHigh = node.ad_risk_pct >= 65;
+        const isMid = node.ad_risk_pct >= 35 && node.ad_risk_pct < 65;
+        const colorClass = isHigh ? 'text-danger' : (isMid ? 'text-warning' : 'text-success');
+        const fillGradient = isHigh
+          ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
+          : (isMid ? 'linear-gradient(90deg, #06b6d4, #f59e0b)' : 'linear-gradient(90deg, #10b981, #06b6d4)');
+
+        nodeDiv.innerHTML = `
+          <span class="t-lbl">${node.label}</span>
+          <div class="t-val ${colorClass}">${node.ad_risk_pct}%</div>
+          <div class="traj-bar">
+            <div class="traj-fill" style="width: ${Math.max(node.ad_risk_pct, 6)}%; background: ${fillGradient}"></div>
+          </div>
+          <small style="font-size: 0.68rem; color: var(--text-dim); margin-top: 0.25rem; display: block;">
+            Preserved: ${node.healthy_pct}%
+          </small>
+        `;
+        trajectoryGrid.appendChild(nodeDiv);
+      });
+    }
+  }
+
+  // =========================================================================
+  // 9. Patient-Specific Local Feature Attribution (SHAP Waterfall)
+  // =========================================================================
+  function renderLocalShapAttributions(attributions) {
+    if (!localShapList) return;
+    localShapList.innerHTML = '';
+
+    if (!attributions || attributions.length === 0) {
+      localShapList.innerHTML = `<p class="text-muted" style="font-size: 0.85rem; padding: 0.5rem 0;">Local SHAP breakdown is computing or unavailable for this instance.</p>`;
+      return;
+    }
+
+    attributions.forEach(item => {
+      const isRisk = item.direction === 'risk';
+      const pillClass = isRisk ? 'risk' : 'protective';
+      const pillSymbol = isRisk ? '+ ' : '- ';
+      const fillGradient = isRisk
+        ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
+        : 'linear-gradient(90deg, #10b981, #06b6d4)';
+
+      const row = document.createElement('div');
+      row.className = 'shap-row-item';
+      row.innerHTML = `
+        <div class="shap-row-meta">
+          <div class="shap-feat-name">
+            <strong>${item.feature}</strong> = <span>${typeof item.value === 'number' ? (Number.isInteger(item.value) ? item.value : item.value.toFixed(1)) : item.value}</span>
+          </div>
+          <span class="shap-impact-pill ${pillClass}">${pillSymbol}${item.impact_pct}% Impact</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: ${Math.max(item.impact_pct, 5)}%; background: ${fillGradient}"></div>
+        </div>
+        <div class="shap-insight-text">${item.insight}</div>
+      `;
+      localShapList.appendChild(row);
+    });
+  }
+
+  // =========================================================================
+  // 10. Interactive 'What-If' Intervention Simulator
+  // =========================================================================
+  if (btnToggleIntervention && interventionCard) {
+    btnToggleIntervention.addEventListener('click', () => {
+      interventionCard.classList.toggle('hidden');
+      if (!interventionCard.classList.contains('hidden')) {
+        interventionCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  }
+
+  if (btnCloseSim && interventionCard) {
+    btnCloseSim.addEventListener('click', () => {
+      interventionCard.classList.add('hidden');
+    });
+  }
+
+  function initInterventionSimulator(baseRiskPct) {
+    if (simFunctional) simFunctional.value = 0;
+    if (simAdl) simAdl.value = 0;
+    if (simCsf) simCsf.value = 0;
+    if (simMmse) simMmse.value = 0;
+
+    if (lblSimFunc) lblSimFunc.textContent = '+0.0';
+    if (lblSimAdl) lblSimAdl.textContent = '+0.0';
+    if (lblSimCsf) lblSimCsf.textContent = '+0 pg/mL';
+    if (lblSimMmse) lblSimMmse.textContent = '+0.0';
+
+    if (simBaseRisk) simBaseRisk.textContent = `${baseRiskPct}%`;
+    if (simPostRisk) simPostRisk.textContent = `${baseRiskPct}%`;
+    if (simReductionBadge) {
+      simReductionBadge.textContent = 'Adjust sliders to simulate therapeutic risk reduction';
+      simReductionBadge.style.opacity = '0.7';
+    }
+  }
+
+  function setupSimulatorListeners() {
+    const triggerSimulation = () => {
+      if (!currentSimPatient) return;
+      clearTimeout(simDebounceTimer);
+      simDebounceTimer = setTimeout(runSimulateIntervention, 120);
+    };
+
+    if (simFunctional) {
+      simFunctional.addEventListener('input', (e) => {
+        if (lblSimFunc) lblSimFunc.textContent = `+${parseFloat(e.target.value).toFixed(2)}`;
+        triggerSimulation();
+      });
+    }
+
+    if (simAdl) {
+      simAdl.addEventListener('input', (e) => {
+        if (lblSimAdl) lblSimAdl.textContent = `+${parseFloat(e.target.value).toFixed(2)}`;
+        triggerSimulation();
+      });
+    }
+
+    if (simCsf) {
+      simCsf.addEventListener('input', (e) => {
+        if (lblSimCsf) lblSimCsf.textContent = `+${e.target.value} pg/mL`;
+        triggerSimulation();
+      });
+    }
+
+    if (simMmse) {
+      simMmse.addEventListener('input', (e) => {
+        if (lblSimMmse) lblSimMmse.textContent = `+${parseFloat(e.target.value).toFixed(1)}`;
+        triggerSimulation();
+      });
+    }
+  }
+  setupSimulatorListeners();
+
+  async function runSimulateIntervention() {
+    if (!currentSimPatient) return;
+
+    const payload = {
+      patient: currentSimPatient,
+      delta_functional: parseFloat(simFunctional.value || 0),
+      delta_adl: parseFloat(simAdl.value || 0),
+      delta_csf: parseFloat(simCsf.value || 0),
+      delta_mmse: parseFloat(simMmse.value || 0)
+    };
+
+    try {
+      const resp = await fetch('/api/simulate_intervention', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      if (data.status === 'success') {
+        if (simBaseRisk) simBaseRisk.textContent = `${data.baseline_risk_pct}%`;
+        if (simPostRisk) simPostRisk.textContent = `${data.post_risk_pct}%`;
+        if (simReductionBadge) {
+          simReductionBadge.style.opacity = '1';
+          if (data.risk_reduction_pct > 0) {
+            simReductionBadge.textContent = `-${data.risk_reduction_pct}% Absolute Risk Reduction (${data.relative_improvement_pct}% Relative)`;
+          } else {
+            simReductionBadge.textContent = 'Baseline level (no intervention applied yet)';
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Simulation failed:', err);
+    }
+  }
+
+  // =========================================================================
+  // 11. Printable Clinical Diagnostic Report Modal
+  // =========================================================================
+  if (btnOpenReport && reportModal) {
+    btnOpenReport.addEventListener('click', () => {
+      if (!latestPredictionResult || !lastPayload) {
+        alert('Please evaluate a patient first before exporting a diagnostic report.');
+        return;
+      }
+      populateClinicalReport(latestPredictionResult, lastPayload);
+      reportModal.classList.remove('hidden');
+    });
+  }
+
+  if (btnCloseReport && reportModal) {
+    btnCloseReport.addEventListener('click', () => {
+      reportModal.classList.add('hidden');
+    });
+  }
+
+  if (reportModal) {
+    reportModal.addEventListener('click', (e) => {
+      if (e.target === reportModal) {
+        reportModal.classList.add('hidden');
+      }
+    });
+  }
+
+  if (btnPrintReport) {
+    btnPrintReport.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  function populateClinicalReport(res, patient) {
+    const isAD = res.prediction === 1;
+    const adProbPct = (res.ensemble_probability * 100).toFixed(1);
+    const confPct = res.ensemble_confidence !== undefined ? res.ensemble_confidence.toFixed(1) : adProbPct;
+
+    // Header Meta
+    const repRef = document.getElementById('rep-ref');
+    const repDate = document.getElementById('rep-date');
+    const repEngine = document.getElementById('rep-engine');
+    if (repRef) repRef.textContent = `NVA-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    if (repDate) repDate.textContent = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    if (repEngine) repEngine.textContent = res.ensemble_name;
+
+    // Summary Banner
+    const repVerdict = document.getElementById('rep-verdict');
+    const repSubtext = document.getElementById('rep-subtext');
+    const repConfScore = document.getElementById('rep-conf-score');
+    const repRiskBadge = document.getElementById('rep-risk-badge');
+
+    if (repVerdict) repVerdict.textContent = isAD ? "Alzheimer's Disease Detected (Positive Case)" : "Non-Alzheimer (Cognitively Preserved)";
+    if (repSubtext) repSubtext.textContent = isAD
+      ? "Diagnostic indicators and biological biomarkers exhibit characteristic Alzheimer's pathological patterns."
+      : "Clinical metrics and biological biomarker concentrations remain within the normative cognitive range.";
+    if (repConfScore) repConfScore.textContent = `${confPct}%`;
+    if (repRiskBadge) repRiskBadge.textContent = `${res.risk_level} Risk Category`;
+
+    // Biomarkers Table
+    const tbody = document.getElementById('rep-biomarkers-tbody');
+    if (tbody) {
+      tbody.innerHTML = '';
+      const rows = [
+        { name: 'Mini-Mental State Exam (MMSE)', val: `${patient.MMSE} / 30`, ref: '16.0 - 22.0', status: patient.MMSE < 13 ? 'Severely Depressed (Impaired)' : (patient.MMSE < 16 ? 'Borderline Mild Impairment' : 'Normative Cohort Range') },
+        { name: 'Functional Assessment', val: `${patient.FunctionalAssessment} / 10`, ref: '5.5 - 8.0', status: patient.FunctionalAssessment < 4.0 ? 'Impaired Autonomy' : 'Preserved Independence' },
+        { name: 'Activities of Daily Living (ADL)', val: `${patient.ADL} / 10`, ref: '5.5 - 8.0', status: patient.ADL < 4.0 ? 'Impaired Daily Living' : 'Independent Functioning' },
+        { name: 'Patient Age', val: `${patient.Age} Years`, ref: '60 - 90 Years', status: 'Demographic Baseline' },
+        { name: 'Memory Complaints', val: patient.MemoryComplaints == 1 ? 'Present' : 'Absent', ref: '0 (Absent)', status: patient.MemoryComplaints == 1 ? 'Subjective Memory Deficit' : 'No Subjective Decline' },
+        { name: 'Episodes of Disorientation / Confusion', val: patient.Confusion == 1 ? 'Present' : 'Absent', ref: '0 (Absent)', status: patient.Confusion == 1 ? 'Temporal/Spatial Disorientation' : 'Oriented' },
+        { name: 'Behavioral / Neuropsychiatric Symptoms', val: patient.BehavioralProblems == 1 ? 'Present' : 'Absent', ref: '0 (Absent)', status: patient.BehavioralProblems == 1 ? 'Neuropsychiatric Manifestation' : 'Normal Affect' },
+        { name: 'Hippocampal Volume (MRI Volumetric)', val: `${patient.Hippocampal_Volume} mm³`, ref: '> 3600 mm³', status: patient.Hippocampal_Volume < 3300 ? 'Significant Medial Temporal Atrophy' : 'Preserved Parenchyma' },
+        { name: 'MRI / PET Imaging Uptake Score', val: `${patient.MRI_PET_Imaging_Scores} SUVr`, ref: '< 30.0 SUVr', status: patient.MRI_PET_Imaging_Scores > 45 ? 'Elevated Cortical Amyloid Tracer Uptake' : 'Low Tracer Binding' },
+        { name: 'CSF Amyloid-Beta 42 (Aβ42)', val: `${patient['CSF Abeta42 Levels']} pg/mL`, ref: '> 750 pg/mL', status: patient['CSF Abeta42 Levels'] < 650 ? 'Pathologically Depleted (Cortical Plaque)' : 'Normal Solubility' },
+        { name: 'APOE ε4 Allele Status', val: patient['APOE4 Gene Presence'] == 1 ? 'Carrier (ε4+)' : 'Non-carrier (ε4-)', ref: 'Non-carrier (ε2/ε3 or ε3/ε3)', status: patient['APOE4 Gene Presence'] == 1 ? 'Elevated Genetic Susceptibility' : 'Neutral Genetic Risk' }
+      ];
+
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${r.name}</strong></td>
+          <td>${r.val}</td>
+          <td>${r.ref}</td>
+          <td><span style="font-weight: 600; color: ${r.status.includes('Impaired') || r.status.includes('Depressed') || r.status.includes('Atrophy') || r.status.includes('Placque') || r.status.includes('Susceptibility') ? '#b91c1c' : '#15803d'}">${r.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Consensus Grid
+    const repConsensus = document.getElementById('rep-consensus-grid');
+    if (repConsensus && res.models_detail) {
+      repConsensus.innerHTML = '';
+      for (const [mName, mMeta] of Object.entries(res.models_detail)) {
+        const cell = document.createElement('div');
+        cell.className = 'rep-consensus-cell';
+        const pRisk = (mMeta.probability_ad * 100).toFixed(1);
+        const isMAd = mMeta.predicted_class === 1;
+        cell.innerHTML = `
+          <div class="rep-m-title">${mName}</div>
+          <div class="rep-m-prob" style="color: ${isMAd ? '#dc2626' : '#16a34a'}">${isMAd ? 'AD ' + pRisk + '%' : 'Healthy ' + (100 - pRisk).toFixed(1) + '%'}</div>
+          <div class="rep-m-sub">Weight: ${(mMeta.weight * 100).toFixed(1)}%</div>
+        `;
+        repConsensus.appendChild(cell);
+      }
+    }
+
+    // Top SHAP attributions
+    const repShap = document.getElementById('rep-shap-list');
+    if (repShap && res.local_attributions) {
+      repShap.innerHTML = '';
+      res.local_attributions.slice(0, 5).forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${item.feature}</strong> (${item.direction === 'risk' ? '🔴 Risk Factor' : '🟢 Protective'}): ${item.insight} [${item.impact_pct}% contribution]`;
+        repShap.appendChild(li);
+      });
+    }
+
+    // Clinical Action Recommendations
+    const repActionBox = document.getElementById('rep-action-box');
+    if (repActionBox) {
+      if (isAD) {
+        repActionBox.innerHTML = `
+          <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 1rem; border-radius: 6px;">
+            <strong style="color: #991b1b; display: block; margin-bottom: 0.35rem;">Urgent Clinical Action Protocol:</strong>
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.82rem; color: #7f1d1d; line-height: 1.6;">
+              <li>Immediate referral to a Memory Disorders Clinic / Board-Certified Behavioral Neurologist.</li>
+              <li>Schedule high-resolution 3T volumetric structural MRI and diagnostic Tau-PET imaging.</li>
+              <li>Evaluate eligibility for monoclonal anti-amyloid antibody therapy (e.g. Lecanemab/Donanemab) with baseline ARIA risk screening.</li>
+              <li>Implement formal neuropsychological cognitive rehabilitation and safety measures for activities of daily living.</li>
+            </ul>
+          </div>
+        `;
+      } else {
+        repActionBox.innerHTML = `
+          <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 1rem; border-radius: 6px;">
+            <strong style="color: #166534; display: block; margin-bottom: 0.35rem;">Standard Monitoring Protocol:</strong>
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.82rem; color: #14532d; line-height: 1.6;">
+              <li>Patient demonstrates preserved cognitive function and normative biomarker stability.</li>
+              <li>Follow-up cognitive screening and MMSE re-evaluation recommended in 12 months.</li>
+              <li>Encourage adherence to the Mediterranean-DASH Intervention for Neurodegenerative Delay (MIND) diet and aerobic exercise.</li>
+            </ul>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // =========================================================================
+  // 12. Cohort Batch Screening & Hospital Triage Dashboard
+  // =========================================================================
+  if (btnLoadDemoCohort) {
+    btnLoadDemoCohort.addEventListener('click', async () => {
+      btnLoadDemoCohort.disabled = true;
+      btnLoadDemoCohort.innerHTML = `<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:14px; height:14px; margin-right:6px;"></span> Querying 25 Cohort Patients...`;
+      try {
+        const demoResp = await fetch('/api/demo_cohort');
+        const demoData = await demoResp.json();
+        if (demoData.status === 'success' && demoData.patients) {
+          const screenResp = await fetch('/api/batch_screen', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ patients: demoData.patients })
+          });
+          const screenData = await screenResp.json();
+          handleBatchScreenResults(screenData);
+        }
+      } catch (err) {
+        console.error('Demo cohort load error:', err);
+        alert('Batch screening error: ' + err.message);
+      } finally {
+        btnLoadDemoCohort.disabled = false;
+        btnLoadDemoCohort.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Load Demo Screening Cohort (25 Patients)
+        `;
+      }
+    });
+  }
+
+  if (batchFileInput) {
+    batchFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const resp = await fetch('/api/batch_screen', {
+          method: 'POST',
+          body: formData
+        });
+        const screenData = await resp.json();
+        if (screenData.status === 'success') {
+          handleBatchScreenResults(screenData);
+        } else {
+          alert('Upload failed: ' + screenData.message);
+        }
+      } catch (err) {
+        console.error('Batch CSV error:', err);
+        alert('CSV Upload error: ' + err.message);
+      } finally {
+        batchFileInput.value = '';
+      }
+    });
+  }
+
+  function handleBatchScreenResults(data) {
+    batchCohortData = data.patients || [];
+    
+    // Update KPI cards
+    if (kpiTotal) kpiTotal.textContent = data.total_screened;
+    if (kpiHigh) kpiHigh.textContent = data.summary.high_risk;
+    if (kpiHighPct) kpiHighPct.textContent = `${data.summary.high_risk_pct}% Immediate Referral`;
+    if (kpiBorderline) kpiBorderline.textContent = data.summary.borderline;
+    if (kpiBorderlinePct) kpiBorderlinePct.textContent = `${data.summary.borderline_pct}% Monitoring Protocol`;
+    if (kpiNormal) kpiNormal.textContent = data.summary.normal;
+    if (kpiNormalPct) kpiNormalPct.textContent = `${data.summary.normal_pct}% Cognitively Intact`;
+    if (kpiAvgRisk) kpiAvgRisk.textContent = `${data.summary.avg_risk_pct}%`;
+
+    // Filter counts
+    if (countAll) countAll.textContent = data.total_screened;
+    if (countHigh) countHigh.textContent = data.summary.high_risk;
+    if (countBorderline) countBorderline.textContent = data.summary.borderline;
+    if (countNormal) countNormal.textContent = data.summary.normal;
+
+    renderBatchTable();
+  }
+
+  // Filter Buttons
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentBatchFilter = btn.dataset.filter;
+      renderBatchTable();
+    });
+  });
+
+  // Search Input
+  if (batchSearchInput) {
+    batchSearchInput.addEventListener('input', (e) => {
+      batchSearchQuery = e.target.value.toLowerCase().trim();
+      renderBatchTable();
+    });
+  }
+
+  function renderBatchTable() {
+    if (!triageTableBody) return;
+    triageTableBody.innerHTML = '';
+
+    if (batchCohortData.length === 0) {
+      triageTableBody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center text-muted" style="padding: 2.5rem;">
+            No cohort uploaded yet. Click <strong>"Load Demo Screening Cohort (25 Patients)"</strong> or upload a CSV file above.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Filter data
+    const filtered = batchCohortData.filter(p => {
+      const matchFilter = currentBatchFilter === 'all' || p.triage_tier === currentBatchFilter;
+      const matchSearch = batchSearchQuery === '' || p.patient_id.toLowerCase().includes(batchSearchQuery);
+      return matchFilter && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+      triageTableBody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center text-muted" style="padding: 2.5rem;">
+            No patients match the selected filter/search criteria.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    filtered.forEach(p => {
+      const tr = document.createElement('tr');
+      const isHigh = p.triage_tier === 'high';
+      const isBorder = p.triage_tier === 'borderline';
+      const riskClass = isHigh ? 'text-danger' : (isBorder ? 'text-warning' : 'text-success');
+
+      tr.innerHTML = `
+        <td><strong>${p.patient_id}</strong></td>
+        <td>${p.age}</td>
+        <td>${p.mmse.toFixed(1)}</td>
+        <td>${p.functional.toFixed(1)}</td>
+        <td><span class="badge ${p.apoe4 === 1 ? 'badge-accent' : 'badge-pill'}">${p.apoe4 === 1 ? 'ε4 Carrier' : 'Non-carrier'}</span></td>
+        <td class="${riskClass}"><strong>${p.ad_risk_pct}%</strong></td>
+        <td class="text-success">${p.healthy_pct}%</td>
+        <td><span class="triage-pill ${p.triage_tier}">${p.triage}</span></td>
+      `;
+      triageTableBody.appendChild(tr);
+    });
+  }
+
+  // Export Annotated CSV Download
+  if (btnExportBatchCsv) {
+    btnExportBatchCsv.addEventListener('click', () => {
+      if (batchCohortData.length === 0) {
+        alert('Please run cohort screening first before exporting data.');
+        return;
+      }
+
+      const headers = ['PatientID', 'Age', 'MMSE', 'FunctionalAssessment', 'APOE4_Presence', 'AD_Risk_Pct', 'Healthy_Pct', 'Triage_Priority'];
+      const rows = batchCohortData.map(p => [
+        p.patient_id,
+        p.age,
+        p.mmse,
+        p.functional,
+        p.apoe4,
+        p.ad_risk_pct,
+        p.healthy_pct,
+        `"${p.triage}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `neurovote_triage_cohort_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
+
+  // =========================================================================
+  // 13. Clinical Interpretation Generator
   // =========================================================================
   function generateClinicalFactors(input, isAD) {
     factorList.innerHTML = '';
@@ -445,7 +1050,6 @@ document.addEventListener('DOMContentLoaded', () => {
       factors.push({ type: 'warning', text: `Carrier of the APOE ε4 susceptibility allele (increased epidemiological genetic vulnerability).` });
     }
 
-    // Render list
     factors.forEach(f => {
       const li = document.createElement('li');
       li.className = `factor-item ${f.type}`;

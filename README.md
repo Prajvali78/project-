@@ -51,6 +51,11 @@ The Web UI features:
 - **Interactive Engine Switcher**: Toggle between the **Advanced 10-Model Super-Ensemble** (99% Acc, 0 FP) and the **Standard 4-Model Clinical Ensemble** (96% Acc).
 - **Quick Demo Presets**: Pre-populate patient metrics for *Healthy Control*, *Early MCI*, or *Probable AD*.
 - **Dynamic Multi-Classifier Breakdown**: Real-time posterior probabilities $P(AD)$ and validation weights across model families.
+- **Patient-Specific Local SHAP Attribution**: Instant TreeExplainer waterfall feature breakdown displaying individual risk-elevating and protective factors with clinical insights.
+- **Clinical Staging & 3-Year Prognosis Trajectory**: Stratifies patients into clinical stages (*Cognitively Normal*, *Subjective Cognitive Decline*, *Mild Cognitive Impairment*, *Mild AD*, *Severe AD*) and projects risk over Months 0, 12, 24, 36.
+- **Interactive 'What-If' Therapeutic Simulator**: Simulates occupational therapy, lifestyle changes, and anti-amyloid treatments, calculating absolute and relative risk reductions.
+- **Formal Clinical Diagnostic Report (Print / PDF)**: Formatted medical document with patient metrics vs. normative ranges, 10-model consensus, and clinician sign-off line.
+- **Cohort Batch Screening & Hospital Triage Dashboard**: Drag-and-drop CSV uploader, 1-click 25-patient demo cohort loader, triage KPI cards, filter tabs, and downloadable annotated CSV.
 - **Model Evaluation Benchmarks Tab**: Comprehensive performance metrics and side-by-side confusion matrix validation ($N=200$).
 - **Explainable AI (SHAP) Tab**: Publication-grade feature importance and multi-model ROC curves.
 
@@ -59,6 +64,46 @@ Execute the full training, ensembling, and evaluation pipeline:
 ```bash
 python main.py
 ```
+
+---
+
+## 🌟 Clinical Decision Support System (CDSS) Innovations
+
+### 1. Patient-Specific Local SHAP Feature Attribution
+Unlike global feature plots that explain the dataset as a whole, the local SHAP TreeExplainer generates an individualized attribution profile for every evaluated patient. It computes exact directional Shapley contributions ($\phi_i$), classifying whether each biomarker elevates risk (positive impact meter) or reflects preservation (protective meter), accompanied by automated clinical insights.
+
+### 2. Clinical Disease Staging & 3-Year Prognosis Trajectory
+Patients are categorized into 5 clinical stages based on ensemble risk and biomarker thresholds:
+1. **Stage 1: Cognitively Normal (CN)** ($P < 0.20$)
+2. **Stage 2: Subjective Cognitive Decline (SCD)** ($0.20 \le P < 0.40$)
+3. **Stage 3: Mild Cognitive Impairment (Prodromal AD / MCI)** ($0.40 \le P < 0.70$)
+4. **Stage 4: Mild-to-Moderate Alzheimer's Disease** ($0.70 \le P < 0.90$)
+5. **Stage 5: Moderate-to-Severe Alzheimer's Disease** ($P \ge 0.90$)
+
+A 3-year decline trajectory model projects natural progression across Month 0, Month 12, Month 24, and Month 36 to help clinicians determine the therapeutic window.
+
+### 3. Interactive 'What-If' Intervention Simulator
+Enables clinicians to test counterfactual intervention scenarios in real time:
+- Occupational & functional independence therapy ($\Delta \text{Functional} \in [0, +2.5]$)
+- Lifestyle & daily living skills rehabilitation ($\Delta \text{ADL} \in [0, +2.5]$)
+- Anti-amyloid clearance & solubilization ($\Delta \text{CSF A}\beta_{42} \in [0, +200 \text{ pg/mL}]$)
+- Cholinesterase inhibitor / cognitive training ($\Delta \text{MMSE} \in [0, +3.0]$)
+Outputs absolute risk reduction ($\Delta P$) and relative risk improvement percentage.
+
+### 4. High-Throughput Cohort Batch Screening & Triage Dashboard
+Designed for hospital admission triage and clinical trial patient intake:
+- Screen entire cohorts via CSV upload or instant 25-patient demo cohort loader.
+- Automatically assigns triage priority: **High Priority** ($P \ge 0.65$), **Borderline** ($0.35 \le P < 0.65$), or **Normative** ($P < 0.35$).
+- Live search by Patient ID, categorical filter tabs, and one-click export of annotated triage CSVs.
+
+### 5. Exportable Clinical Diagnostic Report (Print / PDF)
+Generates an institutional clinical document featuring:
+- Official reference code, timestamp, and active ensemble engine.
+- Patient biomarker values vs. laboratory normative reference ranges.
+- Full 10-model consensus probability matrix.
+- Primary local risk drivers from TreeSHAP.
+- Evidence-based clinical protocol recommendations and clinician signature block.
+- `@media print` optimized styling for physical printing or instant PDF export.
 
 ---
 
