@@ -137,35 +137,35 @@
                 <div class="input-group">
                   <label for="input-mmse">
                     MMSE Score (0 - 30)
-                    <span class="info-tooltip" title="Mini-Mental State Exam: Normal ≥ 27; Mild impairment 21-26; Moderate 11-20; Severe ≤ 10">ⓘ</span>
+                    <span class="info-tooltip" title="Mini-Mental State Exam: Normal range 16-22; Mild impairment 13-15; Severe < 12">ⓘ</span>
                   </label>
-                  <input type="number" id="input-mmse" name="MMSE" min="0" max="30" step="0.5" value="28.0" required>
-                  <span class="input-helper">Normal score: 25 - 30</span>
+                  <input type="number" id="input-mmse" name="MMSE" min="0" max="30" step="0.5" value="18.0" required>
+                  <span class="input-helper">Normal: 16 - 22 | Impaired: &lt; 13</span>
                 </div>
 
                 <div class="input-group">
                   <label for="input-functional">
                     Functional Assessment (0 - 10)
-                    <span class="info-tooltip" title="General functional capability: Lower scores indicate severe impairment">ⓘ</span>
+                    <span class="info-tooltip" title="Daily functional independence: Normal 5.5-8.0; Impaired < 4.0">ⓘ</span>
                   </label>
-                  <input type="number" id="input-functional" name="FunctionalAssessment" min="0" max="10" step="0.1" value="8.8" required>
-                  <span class="input-helper">Higher = better function</span>
+                  <input type="number" id="input-functional" name="FunctionalAssessment" min="0" max="10" step="0.1" value="6.5" required>
+                  <span class="input-helper">Normal: 5.5 - 8.0 | Impaired: &lt; 4.0</span>
                 </div>
 
                 <div class="input-group">
                   <label for="input-adl">
                     ADL - Activities of Daily Living (0 - 10)
-                    <span class="info-tooltip" title="Ability to perform daily tasks like bathing, dressing, finance management">ⓘ</span>
+                    <span class="info-tooltip" title="Daily self-care living skills: Normal 5.5-8.0; Impaired < 4.0">ⓘ</span>
                   </label>
-                  <input type="number" id="input-adl" name="ADL" min="0" max="10" step="0.1" value="9.2" required>
-                  <span class="input-helper">Higher = independent living</span>
+                  <input type="number" id="input-adl" name="ADL" min="0" max="10" step="0.1" value="6.8" required>
+                  <span class="input-helper">Normal: 5.5 - 8.0 | Impaired: &lt; 4.0</span>
                 </div>
 
                 <div class="input-group">
                   <label for="input-age">
                     Patient Age (Years)
                   </label>
-                  <input type="number" id="input-age" name="Age" min="50" max="100" step="1" value="71" required>
+                  <input type="number" id="input-age" name="Age" min="50" max="100" step="1" value="72" required>
                   <span class="input-helper">Typical cohort: 60 - 90</span>
                 </div>
 
@@ -207,10 +207,10 @@
                 <div class="input-group">
                   <label for="input-hippocampus">
                     Hippocampal Volume (mm³)
-                    <span class="info-tooltip" title="Volumetric MRI metric: Reduced volume indicates progressive hippocampal atrophy">ⓘ</span>
+                    <span class="info-tooltip" title="Volumetric MRI metric: Preserved > 3600; Progressive atrophy < 3300">ⓘ</span>
                   </label>
-                  <input type="number" id="input-hippocampus" name="Hippocampal_Volume" min="1500" max="5500" step="10" value="3850" required>
-                  <span class="input-helper">Healthy adult mean: ~3500 - 4200</span>
+                  <input type="number" id="input-hippocampus" name="Hippocampal_Volume" min="1500" max="5500" step="10" value="3750" required>
+                  <span class="input-helper">Preserved: &gt; 3600 | Atrophy: &lt; 3300</span>
                 </div>
 
                 <div class="input-group">
@@ -218,17 +218,17 @@
                     MRI / PET Imaging Score
                     <span class="info-tooltip" title="Composite Centiloid / Amyloid-PET uptake ratio (SUVr)">ⓘ</span>
                   </label>
-                  <input type="number" id="input-pet" name="MRI_PET_Imaging_Scores" min="0" max="150" step="0.5" value="22.0" required>
-                  <span class="input-helper">Normal < 30; Elevated amyloid > 50</span>
+                  <input type="number" id="input-pet" name="MRI_PET_Imaging_Scores" min="0" max="150" step="0.5" value="24.0" required>
+                  <span class="input-helper">Normal &lt; 30 | Elevated amyloid &gt; 45</span>
                 </div>
 
                 <div class="input-group">
                   <label for="input-abeta">
                     CSF Aβ42 Levels (pg/mL)
-                    <span class="info-tooltip" title="Cerebrospinal Fluid Amyloid Beta 42: Lower levels reflect sequestration into brain plaques">ⓘ</span>
+                    <span class="info-tooltip" title="Cerebrospinal Fluid Amyloid Beta 42: Normal > 750; Depleted in AD < 650">ⓘ</span>
                   </label>
-                  <input type="number" id="input-abeta" name="CSF Abeta42 Levels" min="100" max="1500" step="5" value="880" required>
-                  <span class="input-helper">Normal > 700; AD risk < 600</span>
+                  <input type="number" id="input-abeta" name="CSF Abeta42 Levels" min="100" max="1500" step="5" value="850" required>
+                  <span class="input-helper">Normal: &gt; 750 | Depleted AD: &lt; 650</span>
                 </div>
 
                 <div class="input-group">
@@ -292,9 +292,10 @@
                 <p class="verdict-subtitle" id="verdict-subtitle">Normal cognitive and biological biomarker profile.</p>
               </div>
               <div class="verdict-score">
-                <span class="score-label">AD Risk Probability</span>
-                <span class="score-number" id="verdict-probability">1.2%</span>
-                <span class="risk-badge" id="risk-badge">Low Risk</span>
+                <span class="score-label" id="verdict-score-label">Diagnostic Confidence</span>
+                <span class="score-number" id="verdict-probability">100.0%</span>
+                <span class="risk-badge" id="risk-badge">Healthy (Preserved)</span>
+                <span class="score-subdetail" id="verdict-dual-probs">P(Healthy): 100.0% | P(AD Risk): 0.0%</span>
               </div>
             </div>
 

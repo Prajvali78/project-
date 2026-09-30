@@ -298,6 +298,10 @@ def predict():
         for name, clf in active_models.items():
             # Probability of Class 1 (Alzheimer)
             p_ad = float(clf.predict_proba(sample_scaled)[0, 1])
+            p_healthy = float(1.0 - p_ad)
+            pred_class = 1 if p_ad >= 0.5 else 0
+            conf = max(p_ad, p_healthy)
+
             individual_probs[name] = round(p_ad, 4)
             w = active_weights.get(name, 0.0)
             weighted_p_ad += w * p_ad
@@ -305,6 +309,11 @@ def predict():
             meta = MODEL_FAMILIES.get(name, {'family': 'Classifier', 'category': 'general', 'desc': ''})
             models_meta[name] = {
                 'probability': round(p_ad, 4),
+                'probability_ad': round(p_ad, 4),
+                'probability_healthy': round(p_healthy, 4),
+                'confidence': round(conf * 100, 1),
+                'predicted_class': pred_class,
+                'predicted_label': 'Alzheimer' if pred_class == 1 else 'Non-Alzheimer',
                 'weight': round(w, 4),
                 'family': meta['family'],
                 'category': meta['category'],
@@ -313,7 +322,9 @@ def predict():
 
         # Ensemble prediction
         ensemble_p_ad = round(weighted_p_ad, 4)
+        ensemble_p_healthy = round(1.0 - ensemble_p_ad, 4)
         prediction_class = 1 if ensemble_p_ad >= 0.5 else 0
+        ensemble_conf = round(max(ensemble_p_ad, ensemble_p_healthy) * 100, 1)
 
         # Risk Stratification
         if ensemble_p_ad < 0.35:
@@ -331,6 +342,8 @@ def predict():
             "prediction": prediction_class,
             "prediction_label": "Alzheimer" if prediction_class == 1 else "Non-Alzheimer",
             "ensemble_probability": ensemble_p_ad,
+            "ensemble_probability_healthy": ensemble_p_healthy,
+            "ensemble_confidence": ensemble_conf,
             "risk_level": risk_level,
             "individual_probabilities": individual_probs,
             "weights": {m: round(w, 4) for m, w in active_weights.items()},
