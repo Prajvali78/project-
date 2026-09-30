@@ -35,7 +35,16 @@ pip install -r requirements.txt
 ```
 
 ### 4. Run the Project
-Execute the main pipeline:
+
+#### Option A: Launch the Interactive Web UI
+Start the interactive diagnostic web application:
+```bash
+python app.py
+```
+Then open **`http://localhost:5000`** in your browser.
+
+#### Option B: Run the Command-Line Pipeline & Training
+Execute the full training, ensembling, and evaluation pipeline:
 ```bash
 python main.py
 ```
