@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Intelligent Voting-Based Ensemble Machine Learning Framework for Early Detection of Alzheimer's Disease using Clinical and Neuro-imaging Biomarkers.">
-  <title>NeuroVote AI | Alzheimer's Early Detection Framework</title>
+  <meta name="description" content="Intelligent Voting-Based Ensemble Machine Learning Framework for Early Detection of Alzheimer's Disease using Clinical and Neuro-imaging Biomarkers, featuring 10 SOTA models including LightGBM and CatBoost.">
+  <title>NeuroVote AI | Advanced Multi-Model Ensemble Framework</title>
   
   <!-- Modern Google Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,13 +30,14 @@
           </svg>
         </div>
         <div class="brand-text">
-          <h1>NeuroVote<span>AI</span></h1>
-          <p>Intelligent Ensemble System for Early Alzheimer's Detection</p>
+          <h1>NeuroVote<span>AI</span> <span class="version-badge">v2.0 SOTA</span></h1>
+          <p>Multi-Model Voting Ensemble for Early Alzheimer's Detection</p>
         </div>
       </div>
       <div class="header-stats">
-        <span class="badge badge-accent">Ensemble ROC-AUC: <strong>0.998</strong></span>
-        <span class="badge badge-success">Target Precision: <strong>98%</strong></span>
+        <span class="badge badge-accent">Super-Ensemble AUC: <strong>0.9993</strong></span>
+        <span class="badge badge-success">Top Accuracy: <strong>99.0%</strong></span>
+        <span class="badge badge-purple">10 SOTA Models Active</span>
         <button id="theme-toggle" class="btn-icon" title="Toggle Theme" aria-label="Toggle theme">
           <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"></circle>
@@ -63,7 +64,7 @@
       </button>
       <button class="nav-tab" data-tab="tab-benchmarks" id="tab-btn-benchmarks">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        Model Benchmarks & Weights
+        10-Model Benchmarks & Weights
       </button>
       <button class="nav-tab" data-tab="tab-xai" id="tab-btn-xai">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
@@ -77,6 +78,32 @@
 
     <!-- TAB 1: CLINICAL DIAGNOSTIC ASSESSMENT -->
     <section id="tab-predict" class="tab-panel active">
+      
+      <!-- Ensemble Mode Switcher Banner -->
+      <div class="mode-selector-card">
+        <div class="mode-selector-left">
+          <span class="mode-tag">ENSEMBLE ENGINE CONFIGURATION</span>
+          <h3 id="current-mode-title">Active Engine: 10-Model SOTA Super-Ensemble</h3>
+          <p id="current-mode-desc">Combines CatBoost, LightGBM, XGBoost, Random Forest, Extra Trees, MLP, SVC, Gradient Boosting, KNN, and ElasticNet via adaptive F1-weighted soft voting (99.0% Accuracy, Zero False Positives).</p>
+        </div>
+        <div class="mode-toggle-group">
+          <button type="button" class="btn-mode active" data-mode="advanced" id="mode-btn-advanced">
+            <span class="mode-icon">⚡</span>
+            <span class="mode-btn-text">
+              <strong>Advanced Super-Ensemble</strong>
+              <small>10 Models (99.0% Acc, 0 FP)</small>
+            </span>
+          </button>
+          <button type="button" class="btn-mode" data-mode="standard" id="mode-btn-standard">
+            <span class="mode-icon">🩺</span>
+            <span class="mode-btn-text">
+              <strong>Standard Clinical Ensemble</strong>
+              <small>4 Core Models (96.0% Acc)</small>
+            </span>
+          </button>
+        </div>
+      </div>
+
       <div class="grid-layout">
         
         <!-- Left Column: Input Form -->
@@ -235,7 +262,7 @@
           <div class="card-header">
             <div>
               <h2>Diagnostic Prediction Output</h2>
-              <p>Adaptive Soft-Voting Ensemble classification and individual model posterior probabilities.</p>
+              <p id="results-panel-subtitle">Adaptive Soft-Voting Ensemble classification across all active models.</p>
             </div>
             <div id="status-indicator" class="status-pill status-ready">Ready for Evaluation</div>
           </div>
@@ -260,7 +287,7 @@
                 <!-- SVG injected via JS -->
               </div>
               <div class="verdict-details">
-                <span class="verdict-caption">Final Ensemble Diagnostic Decision</span>
+                <span class="verdict-caption" id="verdict-engine-label">10-Model Super-Ensemble Decision</span>
                 <h3 class="verdict-title" id="verdict-title">Non-Alzheimer</h3>
                 <p class="verdict-subtitle" id="verdict-subtitle">Normal cognitive and biological biomarker profile.</p>
               </div>
@@ -271,64 +298,19 @@
               </div>
             </div>
 
-            <!-- Model Probabilities Breakdown -->
+            <!-- Dynamic Model Probabilities Breakdown -->
             <div class="breakdown-section">
               <div class="breakdown-header">
-                <h4>Multi-Classifier Posterior Probabilities & F1 Weights</h4>
-                <span class="text-muted">Adaptive soft-voting aggregation</span>
+                <div>
+                  <h4 id="breakdown-heading">Multi-Classifier Posterior Probabilities & F1 Weights</h4>
+                  <span class="text-muted" id="breakdown-subheading">Adaptive validation F1 soft-voting aggregation</span>
+                </div>
+                <span class="badge badge-accent" id="active-models-counter">10 Models Queried</span>
               </div>
 
-              <!-- Base Classifier Bars -->
-              <div class="classifier-list">
-                
-                <!-- Random Forest -->
-                <div class="classifier-item">
-                  <div class="classifier-info">
-                    <span class="clf-name">Random Forest</span>
-                    <span class="clf-weight badge-pill" id="w-rf">Weight: 25.9%</span>
-                    <span class="clf-prob" id="p-rf">0.0%</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill" id="bar-rf" style="width: 0%"></div>
-                  </div>
-                </div>
-
-                <!-- XGBoost -->
-                <div class="classifier-item">
-                  <div class="classifier-info">
-                    <span class="clf-name">XGBoost Classifier</span>
-                    <span class="clf-weight badge-pill" id="w-xgb">Weight: 26.5%</span>
-                    <span class="clf-prob" id="p-xgb">0.0%</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill" id="bar-xgb" style="width: 0%"></div>
-                  </div>
-                </div>
-
-                <!-- Support Vector Machine -->
-                <div class="classifier-item">
-                  <div class="classifier-info">
-                    <span class="clf-name">Support Vector Classifier (SVC)</span>
-                    <span class="clf-weight badge-pill" id="w-svc">Weight: 23.7%</span>
-                    <span class="clf-prob" id="p-svc">0.0%</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill" id="bar-svc" style="width: 0%"></div>
-                  </div>
-                </div>
-
-                <!-- Multi-Layer Perceptron -->
-                <div class="classifier-item">
-                  <div class="classifier-info">
-                    <span class="clf-name">Multi-Layer Perceptron (MLP)</span>
-                    <span class="clf-weight badge-pill" id="w-mlp">Weight: 24.0%</span>
-                    <span class="clf-prob" id="p-mlp">0.0%</span>
-                  </div>
-                  <div class="progress-track">
-                    <div class="progress-fill" id="bar-mlp" style="width: 0%"></div>
-                  </div>
-                </div>
-
+              <!-- Container for dynamic classifier list -->
+              <div class="classifier-list-dynamic" id="dynamic-classifier-container">
+                <!-- Rendered dynamically by JavaScript -->
               </div>
             </div>
 
@@ -348,11 +330,55 @@
 
     <!-- TAB 2: MODEL BENCHMARKS & WEIGHTS -->
     <section id="tab-benchmarks" class="tab-panel">
+      
+      <!-- Side-by-side Ensemble Highlights -->
+      <div class="ensembles-comparison-grid">
+        
+        <!-- Standard Ensemble Card -->
+        <div class="ensemble-summary-card">
+          <div class="ens-card-header">
+            <span class="badge badge-accent">Core Clinical Baseline</span>
+            <h3>Standard 4-Model Ensemble</h3>
+          </div>
+          <p class="ens-card-desc">Random Forest + XGBoost + Support Vector Machine + Multi-Layer Perceptron</p>
+          <div class="ens-metrics-row">
+            <div class="ens-metric"><span class="m-val">96.0%</span><span class="m-lbl">Accuracy</span></div>
+            <div class="ens-metric"><span class="m-val">0.9977</span><span class="m-lbl">ROC-AUC</span></div>
+            <div class="ens-metric"><span class="m-val">95.6%</span><span class="m-lbl">Recall / Sens</span></div>
+            <div class="ens-metric"><span class="m-val">96.2%</span><span class="m-lbl">Specificity</span></div>
+          </div>
+          <div class="ens-cm-mini">
+            <span>Confusion Matrix (N=200):</span>
+            <strong>TN=127, FP=5, FN=3, TP=65</strong>
+          </div>
+        </div>
+
+        <!-- Advanced Super-Ensemble Card -->
+        <div class="ensemble-summary-card highlight-sota">
+          <div class="ens-card-header">
+            <span class="badge badge-success">SOTA Breakthrough</span>
+            <h3>Advanced 10-Model Super-Ensemble</h3>
+          </div>
+          <p class="ens-card-desc">LightGBM + CatBoost + XGBoost + Gradient Boosting + Random Forest + Extra Trees + MLP + SVC + KNN + ElasticNet</p>
+          <div class="ens-metrics-row">
+            <div class="ens-metric"><span class="m-val text-success">99.0%</span><span class="m-lbl">Accuracy</span></div>
+            <div class="ens-metric"><span class="m-val text-success">0.9993</span><span class="m-lbl">ROC-AUC</span></div>
+            <div class="ens-metric"><span class="m-val text-success">97.1%</span><span class="m-lbl">Recall / Sens</span></div>
+            <div class="ens-metric"><span class="m-val text-success">100.0%</span><span class="m-lbl">Zero False Positives!</span></div>
+          </div>
+          <div class="ens-cm-mini sota">
+            <span>Confusion Matrix (N=200):</span>
+            <strong>TN=132, FP=0 (Zero FP!), FN=2, TP=66</strong>
+          </div>
+        </div>
+
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div>
-            <h2>Model Evaluation Benchmarks</h2>
-            <p>Empirical performance metrics on the stratified test cohort ($N=200$, 80/20 train/test split).</p>
+            <h2>Comprehensive 10-Model Empirical Benchmarks</h2>
+            <p>Empirical metrics evaluated on the stratified test cohort ($N=200$, 80/20 train/test split, random_state=7).</p>
           </div>
         </div>
 
@@ -361,69 +387,173 @@
             <thead>
               <tr>
                 <th>Model Architecture</th>
+                <th>Model Family</th>
                 <th>Accuracy</th>
-                <th>Precision (Weighted)</th>
-                <th>Recall (Weighted)</th>
-                <th>F1-Score (Weighted)</th>
+                <th>Precision</th>
+                <th>Recall (Sensitivity)</th>
+                <th>F1-Score</th>
                 <th>ROC-AUC</th>
                 <th>Validation Weight</th>
               </tr>
             </thead>
             <tbody>
+              <!-- SOTA Gradient Boosters -->
+              <tr class="family-divider">
+                <td colspan="8"><strong>🚀 STATE-OF-THE-ART GRADIENT BOOSTING ALGORITHMS</strong></td>
+              </tr>
+              <tr class="top-row">
+                <td><strong>XGBoost Classifier</strong> <span class="badge badge-accent">Top Solo Acc</span></td>
+                <td><span class="family-tag boosting">Gradient Boosting</span></td>
+                <td><span class="metric-val">0.9950</span> (99.5%)</td>
+                <td><span class="metric-val">1.0000</span> (100%)</td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9926</span></td>
+                <td><span class="metric-val">0.9993</span></td>
+                <td><span class="badge badge-accent">w = 0.1070</span></td>
+              </tr>
+              <tr class="top-row">
+                <td><strong>CatBoost Classifier</strong> <span class="badge badge-purple">Top ROC-AUC</span></td>
+                <td><span class="family-tag boosting">Symmetric Trees</span></td>
+                <td><span class="metric-val">0.9900</span> (99.0%)</td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val highlight">0.9997</span></td>
+                <td><span class="badge badge-accent">w = 0.1062</span></td>
+              </tr>
+              <tr>
+                <td><strong>LightGBM Classifier</strong></td>
+                <td><span class="family-tag boosting">Histogram-based</span></td>
+                <td><span class="metric-val">0.9900</span> (99.0%)</td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9996</span></td>
+                <td><span class="badge badge-accent">w = 0.1062</span></td>
+              </tr>
+              <tr>
+                <td><strong>Gradient Boosting Classifier</strong></td>
+                <td><span class="family-tag boosting">Additive Boosting</span></td>
+                <td><span class="metric-val">0.9900</span> (99.0%)</td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9853</span></td>
+                <td><span class="metric-val">0.9968</span></td>
+                <td><span class="badge badge-accent">w = 0.1062</span></td>
+              </tr>
+
+              <!-- Tree Ensembles -->
+              <tr class="family-divider">
+                <td colspan="8"><strong>🌲 BAGGED & RANDOMIZED ENSEMBLE TREES</strong></td>
+              </tr>
               <tr>
                 <td><strong>Random Forest Classifier</strong></td>
+                <td><span class="family-tag trees">Bagged Trees</span></td>
                 <td><span class="metric-val">0.9800</span> (98.0%)</td>
-                <td><span class="metric-val">0.9806</span></td>
-                <td><span class="metric-val">0.9800</span></td>
-                <td><span class="metric-val">0.9798</span></td>
+                <td><span class="metric-val">1.0000</span> (100%)</td>
+                <td><span class="metric-val">0.9412</span></td>
+                <td><span class="metric-val">0.9697</span></td>
                 <td><span class="metric-val">0.9974</span></td>
-                <td><span class="badge badge-accent">w = 0.2587</span></td>
+                <td><span class="badge badge-accent">w = 0.1045</span></td>
               </tr>
               <tr>
-                <td><strong>XGBoost Classifier</strong></td>
-                <td><span class="metric-val">0.9950</span> (99.5%)</td>
-                <td><span class="metric-val">0.9950</span></td>
-                <td><span class="metric-val">0.9950</span></td>
-                <td><span class="metric-val">0.9950</span></td>
-                <td><span class="metric-val">0.9993</span></td>
-                <td><span class="badge badge-accent">w = 0.2648</span></td>
-              </tr>
-              <tr>
-                <td><strong>Support Vector Machine (SVC)</strong></td>
+                <td><strong>Extra Trees Classifier</strong></td>
+                <td><span class="family-tag trees">Extremely Randomized</span></td>
                 <td><span class="metric-val">0.9250</span> (92.5%)</td>
-                <td><span class="metric-val">0.9246</span></td>
-                <td><span class="metric-val">0.9250</span></td>
-                <td><span class="metric-val">0.9246</span></td>
-                <td><span class="metric-val">0.9761</span></td>
-                <td><span class="badge badge-accent">w = 0.2367</span></td>
+                <td><span class="metric-val">0.9077</span></td>
+                <td><span class="metric-val">0.8676</span></td>
+                <td><span class="metric-val">0.8872</span></td>
+                <td><span class="metric-val">0.9875</span></td>
+                <td><span class="badge badge-accent">w = 0.0964</span></td>
+              </tr>
+
+              <!-- Neural & Kernel -->
+              <tr class="family-divider">
+                <td colspan="8"><strong>🧠 NEURAL NETWORKS & KERNEL CLASSIFIERS</strong></td>
               </tr>
               <tr>
                 <td><strong>Multi-Layer Perceptron (MLP)</strong></td>
+                <td><span class="family-tag neural">Deep Neural Net</span></td>
                 <td><span class="metric-val">0.9300</span> (93.0%)</td>
-                <td><span class="metric-val">0.9307</span></td>
-                <td><span class="metric-val">0.9300</span></td>
-                <td><span class="metric-val">0.9302</span></td>
+                <td><span class="metric-val">0.8857</span></td>
+                <td><span class="metric-val">0.9118</span></td>
+                <td><span class="metric-val">0.8986</span></td>
                 <td><span class="metric-val">0.9785</span></td>
-                <td><span class="badge badge-accent">w = 0.2397</span></td>
+                <td><span class="badge badge-accent">w = 0.0969</span></td>
+              </tr>
+              <tr>
+                <td><strong>Support Vector Classifier (SVC)</strong></td>
+                <td><span class="family-tag svm">RBF Kernel</span></td>
+                <td><span class="metric-val">0.9250</span> (92.5%)</td>
+                <td><span class="metric-val">0.8841</span></td>
+                <td><span class="metric-val">0.8971</span></td>
+                <td><span class="metric-val">0.8905</span></td>
+                <td><span class="metric-val">0.9761</span></td>
+                <td><span class="badge badge-accent">w = 0.0956</span></td>
+              </tr>
+
+              <!-- Statistical / Distance -->
+              <tr class="family-divider">
+                <td colspan="8"><strong>📊 REGULARIZED LINEAR & INSTANCE-BASED MODELS</strong></td>
+              </tr>
+              <tr>
+                <td><strong>ElasticNet Logistic Regression</strong></td>
+                <td><span class="family-tag stat">L1/L2 Regularized</span></td>
+                <td><span class="metric-val">0.8950</span> (89.5%)</td>
+                <td><span class="metric-val">0.8615</span></td>
+                <td><span class="metric-val">0.8235</span></td>
+                <td><span class="metric-val">0.8421</span></td>
+                <td><span class="metric-val">0.9615</span></td>
+                <td><span class="badge badge-accent">w = 0.0908</span></td>
+              </tr>
+              <tr>
+                <td><strong>K-Nearest Neighbors (KNN)</strong></td>
+                <td><span class="family-tag stat">Instance Distance</span></td>
+                <td><span class="metric-val">0.8900</span> (89.0%)</td>
+                <td><span class="metric-val">0.8485</span></td>
+                <td><span class="metric-val">0.8235</span></td>
+                <td><span class="metric-val">0.8358</span></td>
+                <td><span class="metric-val">0.9622</span></td>
+                <td><span class="badge badge-accent">w = 0.0901</span></td>
+              </tr>
+
+              <!-- Ensemble Summaries -->
+              <tr class="family-divider">
+                <td colspan="8"><strong>⭐ ADAPTIVE VOTING-BASED ENSEMBLES</strong></td>
               </tr>
               <tr class="highlight-row">
-                <td><strong>Adaptive Weighted Ensemble</strong></td>
-                <td><span class="metric-val highlight">0.9600</span> (96.0%)</td>
-                <td><span class="metric-val highlight">0.9605</span></td>
-                <td><span class="metric-val highlight">0.9600</span></td>
-                <td><span class="metric-val highlight">0.9601</span></td>
-                <td><span class="metric-val highlight">0.9977</span></td>
-                <td><span class="badge badge-success">Normalized sum = 1.0</span></td>
+                <td><strong>Standard Clinical Ensemble (4 Core Models)</strong></td>
+                <td><span class="badge badge-accent">Ensemble (4)</span></td>
+                <td><span class="metric-val">0.9600</span> (96.0%)</td>
+                <td><span class="metric-val">0.9286</span></td>
+                <td><span class="metric-val">0.9559</span></td>
+                <td><span class="metric-val">0.9420</span></td>
+                <td><span class="metric-val">0.9977</span></td>
+                <td><span class="badge badge-accent">Norm Sum = 1.0</span></td>
+              </tr>
+              <tr class="sota-highlight-row">
+                <td><strong>Advanced SOTA Super-Ensemble (All 10 Models)</strong></td>
+                <td><span class="badge badge-success">Super-Ensemble (10)</span></td>
+                <td><span class="metric-val highlight">0.9900</span> (99.0%)</td>
+                <td><span class="metric-val highlight">1.0000</span> (100%)</td>
+                <td><span class="metric-val highlight">0.9706</span></td>
+                <td><span class="metric-val highlight">0.9851</span></td>
+                <td><span class="metric-val highlight">0.9993</span></td>
+                <td><span class="badge badge-success">Norm Sum = 1.0</span></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Target Confusion Matrix Card -->
-        <div class="confusion-matrix-box">
+        <!-- Comparative Confusion Matrices Grid -->
+        <div class="confusion-matrices-dual">
+          
           <div class="matrix-card">
-            <h3>Target Confusion Matrix (Test Set N = 200)</h3>
-            <p>Verification of exact target benchmark metrics:</p>
+            <div class="matrix-card-head">
+              <span class="badge badge-accent">Baseline Validation</span>
+              <h3>Standard Ensemble (4 Models)</h3>
+            </div>
+            <p>Target Confusion Matrix on Test Cohort (N = 200):</p>
             <div class="matrix-grid">
               <div class="matrix-cell tn">
                 <span class="matrix-title">True Negative (TN)</span>
@@ -449,9 +579,45 @@
             <div class="matrix-meta">
               <span>Sensitivity (Recall): <strong>95.6%</strong></span>
               <span>Specificity: <strong>96.2%</strong></span>
-              <span>Positive Predictive Value (PPV): <strong>92.9%</strong></span>
+              <span>Precision: <strong>92.9%</strong></span>
             </div>
           </div>
+
+          <div class="matrix-card sota-border">
+            <div class="matrix-card-head">
+              <span class="badge badge-success">SOTA Breakthrough</span>
+              <h3>Advanced Super-Ensemble (10 Models)</h3>
+            </div>
+            <p>Zero False Positive Matrix on Test Cohort (N = 200):</p>
+            <div class="matrix-grid">
+              <div class="matrix-cell tn">
+                <span class="matrix-title">True Negative (TN)</span>
+                <span class="matrix-count text-success">132</span>
+                <span class="matrix-sub">Healthy Correct (100%)</span>
+              </div>
+              <div class="matrix-cell fp">
+                <span class="matrix-title">False Positive (FP)</span>
+                <span class="matrix-count text-success">0</span>
+                <span class="matrix-sub">Zero False Alarms!</span>
+              </div>
+              <div class="matrix-cell fn">
+                <span class="matrix-title">False Negative (FN)</span>
+                <span class="matrix-count">2</span>
+                <span class="matrix-sub">Only 2 Missed Cases</span>
+              </div>
+              <div class="matrix-cell tp">
+                <span class="matrix-title">True Positive (TP)</span>
+                <span class="matrix-count text-success">66</span>
+                <span class="matrix-sub">AD Correct</span>
+              </div>
+            </div>
+            <div class="matrix-meta">
+              <span>Sensitivity (Recall): <strong>97.1%</strong></span>
+              <span>Specificity: <strong>100.0%</strong></span>
+              <span>Precision: <strong>100.0%</strong></span>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -462,8 +628,8 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <h2>Explainable AI (SHAP) & Research Visualizations</h2>
-            <p>Feature attribution hierarchy and publication-grade evaluation charts generated by the training pipeline.</p>
+            <h2>Explainable AI (SHAP) & Multi-Model Visualizations</h2>
+            <p>Feature attribution hierarchy and publication-grade evaluation charts generated by the pipeline.</p>
           </div>
         </div>
 
@@ -481,8 +647,8 @@
 
           <div class="vis-item">
             <div class="vis-header">
-              <h3>Receiver Operating Characteristic (ROC) Curves</h3>
-              <p>Comparative AUC curves across individual classifiers and the ensemble (AUC = 0.998)</p>
+              <h3>Multi-Model Receiver Operating Characteristic (ROC) Curves</h3>
+              <p>Comparative AUC curves across 10 individual classifiers and both ensembles (Super-Ensemble AUC = 0.9993)</p>
             </div>
             <div class="vis-img-wrapper">
               <img src="/visualizations/roc_curve.png" alt="ROC Curves" loading="lazy">
@@ -491,8 +657,8 @@
 
           <div class="vis-item">
             <div class="vis-header">
-              <h3>Model Accuracy & F1 Comparison</h3>
-              <p>Performance comparison between standalone base models and the weighted ensemble</p>
+              <h3>10-Model Accuracy & F1-Score Comparison</h3>
+              <p>Comparison of standalone classifiers against the 4-Model Standard Ensemble and 10-Model Super-Ensemble</p>
             </div>
             <div class="vis-img-wrapper">
               <img src="/visualizations/model_accuracy_comparison.png" alt="Accuracy Comparison" loading="lazy">
@@ -501,8 +667,8 @@
 
           <div class="vis-item">
             <div class="vis-header">
-              <h3>Ensemble Confusion Matrix Display</h3>
-              <p>Test set classification distribution (TN=127, FP=5, FN=3, TP=65)</p>
+              <h3>Dual Confusion Matrix Comparison Display</h3>
+              <p>Side-by-side test set classification: Standard Ensemble (FP=5) vs Super-Ensemble (FP=0)</p>
             </div>
             <div class="vis-img-wrapper">
               <img src="/visualizations/confusion_matrix.png" alt="Confusion Matrix Display" loading="lazy">
@@ -517,7 +683,7 @@
 
   <!-- Footer -->
   <footer class="app-footer">
-    <p>© 2026 NeuroVote AI Medical Informatics Project. Developed with Python, Scikit-Learn, XGBoost, and SHAP.</p>
+    <p>© 2026 NeuroVote AI Medical Informatics Project. Powered by XGBoost, LightGBM, CatBoost, Scikit-Learn, and SHAP Explainable AI.</p>
   </footer>
 
   <script src="/static/js/app.js"></script>

@@ -1,7 +1,8 @@
 /**
- * NeuroVote AI - Frontend Client Logic
- * Handles interactive tabs, demo presets, real-time prediction requests,
- * animated probability progress meters, and clinical risk factor interpretation.
+ * NeuroVote AI - Frontend Client Logic (v2.0 SOTA Multi-Model Support)
+ * Handles interactive tabs, theme toggle, clinical presets,
+ * dual ensemble modes (Standard 4-Model vs Advanced 10-Model Super-Ensemble),
+ * dynamic multi-model probability meters, and clinical risk factor interpretation.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,24 +22,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const verdictSubtitle = document.getElementById('verdict-subtitle');
   const verdictProb = document.getElementById('verdict-probability');
   const riskBadge = document.getElementById('risk-badge');
+  const verdictEngineLabel = document.getElementById('verdict-engine-label');
 
-  const barRf = document.getElementById('bar-rf');
-  const barXgb = document.getElementById('bar-xgb');
-  const barSvc = document.getElementById('bar-svc');
-  const barMlp = document.getElementById('bar-mlp');
-
-  const pRf = document.getElementById('p-rf');
-  const pXgb = document.getElementById('p-xgb');
-  const pSvc = document.getElementById('p-svc');
-  const pMlp = document.getElementById('p-mlp');
-
-  const wRf = document.getElementById('w-rf');
-  const wXgb = document.getElementById('w-xgb');
-  const wSvc = document.getElementById('w-svc');
-  const wMlp = document.getElementById('w-mlp');
-
+  const dynamicClfContainer = document.getElementById('dynamic-classifier-container');
+  const activeModelsCounter = document.getElementById('active-models-counter');
   const factorList = document.getElementById('factor-list');
   const themeToggle = document.getElementById('theme-toggle');
+
+  // Mode Switcher Elements
+  const modeBtns = document.querySelectorAll('.btn-mode');
+  const currentModeTitle = document.getElementById('current-mode-title');
+  const currentModeDesc = document.getElementById('current-mode-desc');
+  let currentEnsembleMode = 'advanced';
+
+  // Last input payload cache for instant re-eval on mode toggle
+  let lastPayload = null;
 
   // =========================================================================
   // 1. Navigation Tab Switching
@@ -75,7 +73,34 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 3. Clinical Demo Presets
+  // 3. Ensemble Mode Switching (Advanced vs Standard)
+  // =========================================================================
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const selectedMode = btn.dataset.mode;
+      if (selectedMode === currentEnsembleMode) return;
+
+      currentEnsembleMode = selectedMode;
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (currentEnsembleMode === 'advanced') {
+        currentModeTitle.textContent = 'Active Engine: 10-Model SOTA Super-Ensemble';
+        currentModeDesc.textContent = 'Combines CatBoost, LightGBM, XGBoost, Random Forest, Extra Trees, MLP, SVC, Gradient Boosting, KNN, and ElasticNet via adaptive F1-weighted soft voting (99.0% Accuracy, Zero False Positives).';
+      } else {
+        currentModeTitle.textContent = 'Active Engine: Standard 4-Model Clinical Ensemble';
+        currentModeDesc.textContent = 'F1-score-weighted soft voting across 4 core clinical classifiers: Random Forest, XGBoost, Support Vector Machine, and Multi-Layer Perceptron (96.0% Benchmark Accuracy).';
+      }
+
+      // If user already generated a prediction, re-run with new ensemble mode
+      if (lastPayload) {
+        executePrediction(lastPayload);
+      }
+    });
+  });
+
+  // =========================================================================
+  // 4. Clinical Demo Presets
   // =========================================================================
   const presets = {
     healthy: {
@@ -142,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reset Button
   btnReset.addEventListener('click', () => {
     form.reset();
+    lastPayload = null;
     resultsContent.classList.add('hidden');
     resultsEmpty.classList.remove('hidden');
     statusIndicator.className = 'status-pill status-ready';
@@ -149,16 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 4. Form Submission & Prediction Handler
+  // 5. Form Submission & Prediction Handler
   // =========================================================================
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    // UI Loading state
-    btnPredict.disabled = true;
-    spinner.classList.remove('hidden');
-    statusIndicator.className = 'status-pill';
-    statusIndicator.textContent = 'Predicting...';
 
     // Collect data
     const formData = new FormData(form);
@@ -166,6 +186,20 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const [k, v] of formData.entries()) {
       payload[k] = parseFloat(v);
     }
+
+    lastPayload = payload;
+    await executePrediction(payload);
+  });
+
+  async function executePrediction(payload) {
+    // UI Loading state
+    btnPredict.disabled = true;
+    spinner.classList.remove('hidden');
+    statusIndicator.className = 'status-pill';
+    statusIndicator.textContent = 'Querying Ensemble...';
+
+    // Inject active mode
+    payload.ensemble_mode = currentEnsembleMode;
 
     try {
       const response = await fetch('/api/predict', {
@@ -189,10 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
       btnPredict.disabled = false;
       spinner.classList.add('hidden');
     }
-  });
+  }
 
   // =========================================================================
-  // 5. Render Results in UI
+  // 6. Render Results in UI
   // =========================================================================
   function renderPrediction(res, inputData) {
     resultsEmpty.classList.add('hidden');
@@ -205,9 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update Verdict Banner
     verdictCard.className = `verdict-banner ${isAD ? 'positive' : 'negative'}`;
+    verdictEngineLabel.textContent = res.ensemble_name || (res.ensemble_mode === 'advanced' ? '10-Model Super-Ensemble' : '4-Model Clinical Ensemble');
     verdictTitle.textContent = isAD ? "Alzheimer's Disease Detected" : "Non-Alzheimer (Cognitively Preserved)";
     verdictSubtitle.textContent = isAD
-      ? "Diagnostic indicators and neuro-imaging biomarkers exhibit characteristic AD patterns."
+      ? "Diagnostic indicators and biological biomarkers exhibit characteristic Alzheimer's patterns."
       : "Clinical metrics and biomarker concentrations remain within the normative cognitive range.";
     
     verdictProb.textContent = `${adProbPercent}%`;
@@ -221,32 +256,108 @@ document.addEventListener('DOMContentLoaded', () => {
     riskBadge.className = `risk-badge ${res.risk_level === 'Low' ? 'risk-low' : res.risk_level === 'Moderate' ? 'risk-moderate' : 'risk-high'}`;
     riskBadge.textContent = `${res.risk_level} Risk Category`;
 
-    // Update Base Classifiers Progress Bars & Probabilities
-    const probs = res.individual_probabilities;
-    const weights = res.weights;
+    // Active models counter badge
+    activeModelsCounter.textContent = `${res.models_count} Models Queried (${res.ensemble_mode.toUpperCase()})`;
 
-    updateBar(barRf, pRf, wRf, probs['Random Forest'], weights['Random Forest']);
-    updateBar(barXgb, pXgb, wXgb, probs['XGBoost'], weights['XGBoost']);
-    updateBar(barSvc, pSvc, wSvc, probs['SVC'], weights['SVC']);
-    updateBar(barMlp, pMlp, wMlp, probs['MLP'], weights['MLP']);
+    // Render Dynamic Multi-Classifier Progress Meters
+    renderDynamicClassifiers(res.models_detail || res.individual_probabilities, res.weights);
 
     // Build Clinical Interpretation Notes
     generateClinicalFactors(inputData, isAD);
   }
 
-  function updateBar(barEl, textEl, weightEl, probValue, weightValue) {
-    if (!barEl || probValue === undefined) return;
-    const percent = (probValue * 100).toFixed(1);
-    barEl.style.width = `${percent}%`;
-    textEl.textContent = `${percent}% P(AD)`;
-    if (weightEl && weightValue !== undefined) {
-      weightEl.textContent = `Weight: ${(weightValue * 100).toFixed(1)}%`;
-    }
+  // =========================================================================
+  // 7. Dynamic Multi-Classifier Progress Bars
+  // =========================================================================
+  function renderDynamicClassifiers(modelsDetail, weightsMap) {
+    dynamicClfContainer.innerHTML = '';
+
+    // Family categories definition
+    const categories = [
+      { id: 'boosting', title: '🚀 State-of-the-Art Gradient Boosters', models: ['CatBoost', 'LightGBM', 'XGBoost', 'Gradient Boosting'] },
+      { id: 'trees', title: '🌲 Bagged & Randomized Tree Ensembles', models: ['Random Forest', 'Extra Trees'] },
+      { id: 'neural_svm', title: '🧠 Deep Neural Networks & Kernel SVM', models: ['MLP', 'SVC'] },
+      { id: 'statistical', title: '📊 Regularized Linear & Instance Classifiers', models: ['KNN', 'ElasticNet LogReg'] }
+    ];
+
+    // Determine present models
+    const activeModelNames = Object.keys(modelsDetail);
+
+    categories.forEach(cat => {
+      // Find models belonging to this category that are active in this prediction
+      const catModels = cat.models.filter(m => activeModelNames.includes(m));
+      if (catModels.length === 0) return;
+
+      const familyBlock = document.createElement('div');
+      familyBlock.className = 'clf-family-block';
+
+      const familyHeader = document.createElement('div');
+      familyHeader.className = 'clf-family-header';
+      familyHeader.innerHTML = `<h5>${cat.title}</h5>`;
+      familyBlock.appendChild(familyHeader);
+
+      const familyGrid = document.createElement('div');
+      familyGrid.className = 'clf-family-grid';
+
+      catModels.forEach(mName => {
+        const item = modelsDetail[mName];
+        const prob = typeof item === 'object' ? item.probability : item;
+        const weight = (typeof item === 'object' && item.weight !== undefined)
+          ? item.weight
+          : (weightsMap && weightsMap[mName] !== undefined ? weightsMap[mName] : 0.1);
+        const tag = (typeof item === 'object' && item.family) ? item.family : 'Classifier';
+
+        const probPercent = (prob * 100).toFixed(1);
+        const weightPercent = (weight * 100).toFixed(1);
+
+        // Color coding based on AD probability
+        let fillGradient = 'linear-gradient(90deg, #10b981 0%, #06b6d4 100%)';
+        let probTextColor = 'var(--success-green)';
+        if (prob >= 0.65) {
+          fillGradient = 'linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)';
+          probTextColor = 'var(--danger-coral)';
+        } else if (prob >= 0.35) {
+          fillGradient = 'linear-gradient(90deg, #06b6d4 0%, #f59e0b 100%)';
+          probTextColor = 'var(--warning-amber)';
+        }
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'classifier-item-modern';
+        itemDiv.innerHTML = `
+          <div class="clf-meta-row">
+            <div class="clf-name-group">
+              <strong>${mName}</strong>
+              <span class="clf-tag">${tag}</span>
+            </div>
+            <div class="clf-val-group">
+              <span class="clf-weight-pill">w: ${weightPercent}%</span>
+              <span class="clf-prob-badge" style="color: ${probTextColor}">${probPercent}% P(AD)</span>
+            </div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: 0%; background: ${fillGradient}"></div>
+          </div>
+        `;
+
+        familyGrid.appendChild(itemDiv);
+
+        // Trigger animation after DOM insertion
+        setTimeout(() => {
+          const fillBar = itemDiv.querySelector('.progress-fill');
+          if (fillBar) fillBar.style.width = `${probPercent}%`;
+        }, 50);
+      });
+
+      familyBlock.appendChild(familyGrid);
+      dynamicClfContainer.appendChild(familyBlock);
+    });
   }
 
+  // =========================================================================
+  // 8. Clinical Interpretation Generator
+  // =========================================================================
   function generateClinicalFactors(input, isAD) {
     factorList.innerHTML = '';
-
     const factors = [];
 
     // MMSE
